@@ -1,0 +1,11 @@
+{% extends "index.html" %}
+
+{% block content %}
+<form action="/form/" method="POST">
+  {% csrf_token %}
+    <div class="form-group">
+      {{ form.as_p }}
+      <button class="form-control" type="submit", name="execute">Выполнить</button>
+    </div>
+</form>
+{% endblock %}
