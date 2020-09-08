@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 dj_app/secret_key.py
+mikrotik_app/config.py
