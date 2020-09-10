@@ -2,56 +2,84 @@
 from routeros import login
 from config import LOGIN, PASSWORD, IP, PORT
 
-COMMAND_MAPPING = {
-                   'arp': {'command': '/ip/arp/print', 'param': 'mac-address'},
-                   'dhcp': {'command': '/ip/dhcp-server/lease/print', 'param': 'mac-address'},
-                   'acl': {'command': '/ip/firewall/address-list/print', 'param': 'list'}
-                   }
 connect_args = [LOGIN, PASSWORD, IP, PORT, True]
-ip_to_check = '193.238.176.6'
 
 
-def mikrotik_query(ip: str, query_type: str) -> dict:
-    command = COMMAND_MAPPING.get(query_type).get('command')
-    param = COMMAND_MAPPING.get(query_type).get('param')
-    routeros = login(*connect_args)
-    reply = routeros.query(command).equal(address=ip, dynamic='false')
+class AboutIP:
 
-    if not reply:
-        reply_message = 'no record found'
-        error = True
+    def __init__(self, ip):
+        self.ip = ip
 
-    elif len(reply) > 1:
-        reply_message = 'multiple records'
-        error = True
+    def __repr__(self):
+        return f'<AboutIP: {self.ip}>'
 
-    else:
-        reply = reply[0]
-        status = 'disabled' if reply.get('disabled') == 'true' else 'enabled'
-        extra_param = reply.get(param)
-        reply_message = dict(ip=ip, extra_param=extra_param, status=status)
-        error = False
+    def query(self, query) -> tuple:
+        routeros = login(*connect_args)
+        reply = routeros.query(query).equal(address=self.ip, dynamic='false')
+        return reply
 
-    result = dict(reply=reply_message, error=error)
-    return result
+    def arp(self) -> tuple:
+        reply = self.query('/ip/arp/print')
+        if not reply:
+            return False
+        return reply
 
+    def dhcp(self) -> tuple:
+        reply = self.query('/ip/dhcp-server/lease/print')
+        if not reply:
+            return False
+        return reply
 
-def check_status(ip):
-    arp = mikrotik_query(ip, 'arp')
-    dhcp = mikrotik_query(ip, 'dhcp')
-    acl = mikrotik_query(ip, 'acl')
-    if arp['error'] or dhcp['error'] or acl['error']:
-        status = False
-    elif not arp['reply']['extra_param'] == dhcp['reply']['extra_param']:  # Проверка совпадения MAC из DHCP и ARP
-        status = False
-    else:
-        status = True
-    return dict(status=status,
-                arp=arp['reply'],
-                dhcp=dhcp['reply'],
-                acl=acl['reply']
-                )
+    def acl(self) -> tuple:
+        reply = self.query('/ip/firewall/address-list/print')
+        if not reply:
+            return False
+        return reply
 
+    def multiple_records(self) -> bool:
+        if self.arp() and len(self.arp()) > 1:
+            return True
+        if self.dhcp() and len(self.dhcp()) > 1:
+            return True
+        if self.acl() and len(self.acl()) > 1:
+            return True
+        return False
 
-if __name__ == '__main__':
-    print(check_status(ip_to_check))
+    def all_records_found(self) -> bool:
+        if self.arp() and self.dhcp() and self.acl():
+            return True
+
+    def same_mac(self) -> bool:
+        try:
+            arp_mac = self.arp()[0].get('mac-address')
+            dhcp_mac = self.dhcp()[0].get('mac-address')
+        except (TypeError, IndexError):
+            return False
+        if arp_mac == dhcp_mac:
+            return True
+
+    def all_active(self) -> bool:
+        try:
+            arp_state = self.arp()[0].get('disabled')
+            dhcp_state = self.dhcp()[0].get('disabled')
+            acl_state = self.acl()[0].get('disabled')
+            acl_list = self.acl()[0].get('list')
+        except (TypeError, IndexError):
+            return False
+        if arp_state == 'false' \
+                and dhcp_state == 'false' \
+                and acl_state == 'false' \
+                and acl_list == 'ACL-ACCESS-CLIENTS':
+            return True
+
+    def summary_check(self) -> bool:
+        if self.multiple_records():
+            return False
+
+        if not self.all_records_found():
+            return False
+
+        if self.all_active():
+            return True
+
+        return False
