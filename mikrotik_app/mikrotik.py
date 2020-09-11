@@ -1,6 +1,6 @@
 # https://pypi.org/project/routeros/#description
 from routeros import login
-from config import LOGIN, PASSWORD, IP, PORT
+from .config import LOGIN, PASSWORD, IP, PORT
 
 connect_args = [LOGIN, PASSWORD, IP, PORT, True]
 
@@ -73,3 +73,59 @@ class AboutIP:
             return False
 
         return True
+
+    def parse_arp(self):
+        records = []
+        for item in self.arp:
+            ip = item.get('address')
+            mac = item.get('mac-address')
+            state = 'enabled' if item.get('disabled') == 'false' else 'disabled'
+            records.append(f'IP={ip}, MAC={mac}, state={state}')
+        return records
+
+    def parse_dhcp(self):
+        records = []
+        for item in self.dhcp:
+            ip = item.get('address')
+            mac = item.get('mac-address')
+            state = 'enabled' if item.get('disabled') == 'false' else 'disabled'
+            status = item.get('status')
+            records.append(f'IP={ip}, MAC={mac}, status={status}, state={state}')
+        return records
+
+    def parse_acl(self):
+        records = []
+        for item in self.acl:
+            ip = item.get('address')
+            access_list = item.get('list')
+            state = 'enabled' if item.get('disabled') == 'false' else 'disabled'
+            records.append(f'IP={ip}, ACL={access_list}, state={state}')
+        return records
+
+
+def output(ip, action):
+    if action == 'check':
+        check = AboutIP(ip)
+
+        if check.arp:
+            arp = check.parse_arp()
+        else:
+            arp = ['no records found']
+
+        if check.dhcp:
+            dhcp = check.parse_dhcp()
+        else:
+            dhcp = ['no records found']
+
+        if check.acl:
+            acl = check.parse_acl()
+        else:
+            acl = ['no records found']
+
+        status = 'Всё хорошо' if check.summary_check() else 'Что-то не так'
+
+        result = {'arp': arp,
+                  'dhcp': dhcp,
+                  'acl': acl,
+                  'status': status}
+        return result

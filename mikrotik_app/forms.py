@@ -8,6 +8,7 @@ ACTIONS = (
             ('delete_ip', 'Удалить IP')
           )
 
+
 class IPOperations(forms.Form):
     ip = forms.GenericIPAddressField(
         label='IP address',
