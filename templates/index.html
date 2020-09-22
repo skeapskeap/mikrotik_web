@@ -18,9 +18,14 @@
         {% include "navbar.html" %}
         <div class="row">
             <div class="col-lg-4">
-                <h1>Main page</h1>
-                {% block content %}
-                {% endblock %}
+              <h1>Main page</h1>
+              {% block form %}
+              {% endblock %}
+            </div>
+            <div class="col-lg-8">
+              <h3 id=status></h3>
+              <p id=result>
+              </p>
             </div>
         </div>
     </div>

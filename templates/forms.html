@@ -3,30 +3,26 @@
 
 {% load static %}
 
-{% block content %}
+{% block form %}
 
-  <form action="/process/" method="post">
+  <form method="post" id="main_form">
+    {% csrf_token %}
     <div class="form-group">
         <p>
             <label for="id_action">Action:</label>
-            <select name="action" class="form-control" id="action_id">
-                <option value="check">Проверить статус</option>
-                <option value="block">Заблокировать</option>
-                <option value="unblock">Разблокировать</option>
-                <option value="new_mac">Новый MAC</option>
-                <option value="delete_ip">Удалить IP</option>
-            </select>
+            {{ form.action }}
         </p>
 
         <p>
             <label for="id_ip">IP address:</label>
-            <input type="text" name="ip" class="form-control" required id="id_ip">
+            {{ form.ip }}
         </p>
         
         <p class="mac_hidden_field" id="input_mac"> <!-- css class with "display" property set to "none" -->
-            <label for="id_mac">MAC Address</label>
-            <input type="text" name="mac" class="form-control" required id="id_mac">
-        </p>        
+            <label for="input_mac">MAC Address</label>
+            {{ form.mac }}
+        </p>    
+
 
         <button class="form-control" type="submit" value="execute" name="execute">Выполнить</button>
       </div>

@@ -22,6 +22,7 @@ class IPOperations(forms.Form):
         )
     mac = MACAddressFormField(label='MAC address',
                               widget=forms.TextInput(attrs={
-                                  'class': 'mac_hidden_field',
+                                  'label': 'MAC',
+                                  'class': 'form-control',
                                   'id': 'input_mac'
-                                  }))
+                                  }), required=False)

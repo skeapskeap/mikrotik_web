@@ -32,8 +32,8 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
-    $("#action_id").change(function() {             //выполняется если в поле action что-то поменялось
-        var action = $("#action_id").val();         //узнает, какое значение выбрано в action
+    $("#id_action").change(function() {             //выполняется если в поле action что-то поменялось
+        var action = $("#id_action").val();         //узнает, какое значение выбрано в action
         if (action === "new_mac") {                 //если выбрано "поменять мак"
             $("#input_mac").css('display', 'block');//делает свойство css "display"="block" для id=input_mac 
         }
@@ -41,39 +41,39 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         else {
             $("#input_mac").css('display', 'none');//делает свойство css "display"="none" для id=input_mac 
         }
-        
     });
 
     // Submit post on submit
-    $('#def_form').on('submit', function(event){
-        event.preventDefault();
-        console.log("form submitted!")  // sanity check
-        do_some();
-    });
-
-    // AJAX for posting
-    function do_some() {
-        console.log("create post is working!") // sanity check
+    $('form').on('submit', function(event) {
+        event.preventDefault()
         $.ajax({
-            url : "do_some/",   // the endpoint
-            type : "POST",      // http method
-            data : {            // data sent with the post request
-                form_data : $('#def_form').val()
-            }, 
-            // handle a successful response
-            success : function(json) {
-                $('#do_some').val(''); // remove the value from the input
-                console.log(json); // log the returned json to the console
-                $("#result").prepend("<li><strong>"+json.my_text+"</strong> - <a id='delete-post-"+json.del_section+"'>delete me</a></li>");
-                console.log("success"); // another sanity check
-            },
-            // handle a non-successful response
-            error : function(xhr,errmsg,err) {
-                $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-                    " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            url: '',
+            type: 'post',
+            data: $(this).serializeArray(),
+            success: function(response) {
+                var arp = response.arp
+                var dhcp = response.dhcp
+                var acl = response.acl
+                var status = response.status
+                $("#result").empty()
+                $('#status').text(status)
+                for (step = 0; step < arp.length; step++){
+                    $('#result').append('<p>' + arp[step] + '</p>')
+                }
+                
+                for (step = 0; step < dhcp.length; step++){
+                    $('#result').append('<p>' + dhcp[step] + '</p>')
+                }
+                
+                for (step = 0; step < acl.length; step++){
+                    $('#result').append('<p>' + acl[step] + '</p>')
+                }
+                
+                
             }
         });
-    };
+        
+        
+    });
 
 });
