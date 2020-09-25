@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import View
 from .forms import IPOperations
-from .mikrotik import output
+from .mikrotik import run_action
 
 
 def index(request):
@@ -18,6 +18,7 @@ class indexForm(View):
     def post(self, request):
         action = request.POST.get('action')
         ip = request.POST.get('ip')
-        reply = output(ip, action)
+        mac = request.POST.get('mac')
+        reply = run_action(ip, action, mac)
         print(request.POST)
         return JsonResponse(reply, status=200)

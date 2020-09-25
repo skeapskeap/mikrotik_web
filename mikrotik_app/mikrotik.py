@@ -1,4 +1,6 @@
 # https://pypi.org/project/routeros/#description
+import paramiko
+from time import sleep
 from routeros import login
 from .config import LOGIN, PASSWORD, IP, PORT
 
@@ -103,29 +105,94 @@ class AboutIP:
         return records
 
 
-def output(ip, action):
+def run_action(ip, action, mac):
     if action == 'check':
-        check = AboutIP(ip)
+        return check(ip)
+    if action == 'block':
+        return block_ip(ip, block=True)
+    if action == 'unblock':
+        return block_ip(ip, block=False)
+    if action == 'new_mac':
+        return change_mac(ip, mac)
+    if action == 'delete_ip':
+        pass
+    if action == 'new_ip':
+        pass
+    else:
+        return {'message': 'unknown command'}
 
-        if check.arp:
-            arp = check.parse_arp()
-        else:
-            arp = ['no records found']
 
-        if check.dhcp:
-            dhcp = check.parse_dhcp()
-        else:
-            dhcp = ['no records found']
+def check(ip):
+    about_ip = AboutIP(ip)
 
-        if check.acl:
-            acl = check.parse_acl()
-        else:
-            acl = ['no records found']
+    if about_ip.arp:
+        arp = about_ip.parse_arp()
+    else:
+        arp = ['no records found']
 
-        status = 'Всё хорошо' if check.summary_check() else 'Что-то не так'
+    if about_ip.dhcp:
+        dhcp = about_ip.parse_dhcp()
+    else:
+        dhcp = ['no records found']
 
-        result = {'arp': arp,
-                  'dhcp': dhcp,
-                  'acl': acl,
-                  'status': status}
-        return result
+    if about_ip.acl:
+        acl = about_ip.parse_acl()
+    else:
+        acl = ['no records found']
+
+    message = 'Всё хорошо' if about_ip.summary_check() else 'Не всё хорошо'
+
+    result = {'arp': arp,
+              'dhcp': dhcp,
+              'acl': acl,
+              'message': message}
+    return result
+
+
+def block_ip(ip, block=True):
+    if block:
+        action = 'disable'
+    else:
+        action = 'enable'
+    ip = ip.strip()
+    command_string = f'ip arp {action} [find where address={ip}]'
+    send_command(command_string)
+    sleep(1)
+    return check(ip)
+
+
+def change_mac(ip, mac):
+    mac = get_mac(mac)
+    if mac:
+        commands = [f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
+                    f'ip arp set  [find where address={ip}] mac-address={mac}']
+        for command in commands:
+            send_command(command)
+        message = 'Поменяно'
+    else:
+        message = 'Неправильный MAC'
+    result = {'message': message}
+    return result
+
+
+def get_mac(mac):
+    separators = (' ', ':', '-', '.')
+    permitted_chars = set('0123456789abcdef')
+
+    for separator in separators:
+        mac = mac.replace(separator, '')
+    mac = mac.lower()
+    if len(mac) == 12 and set(mac) <= permitted_chars:
+        return mac
+    return False
+
+
+def send_command(command):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(hostname=IP,
+                   username=LOGIN,
+                   password=PASSWORD,
+                   look_for_keys=False,
+                   allow_agent=False)
+    client.exec_command(command)

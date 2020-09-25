@@ -54,9 +54,9 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
                 var arp = response.arp
                 var dhcp = response.dhcp
                 var acl = response.acl
-                var status = response.status
+                var message = response.message
                 $("#result").empty()
-                $('#status').text(status)
+                $('#message').text(message)
                 for (step = 0; step < arp.length; step++){
                     $('#result').append('<p>' + arp[step] + '</p>')
                 }
