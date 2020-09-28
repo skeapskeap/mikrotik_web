@@ -107,7 +107,7 @@ class AboutIP:
         return records
 
 
-def run_action(action, ip, mac, firm_name, url):
+def run_action(action, ip='', mac='', firm_name='', url=''):
     if action == 'check':
         return check(ip)
     if action == 'block':
@@ -193,6 +193,10 @@ def get_mac(mac):
     return False
 
 
+def unique_mac(mac):
+    return True
+
+
 def send_commands(commands: list):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -226,16 +230,25 @@ def find_free_ip() -> str:
 
 
 def add_ip(mac, firm_name, url):
-    ip = find_free_ip()
-    date = dt.now().strftime('%c')
-    firm_name = translit(firm_name, 'ru', reversed=True)
-    comment = f'"{date}; {firm_name}; {url}"'
+    if not unique_mac(mac):
+        message = ['Такой MAC уже существует']
+        return {'message': message}
 
-    commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
-                f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
-                f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
-    send_commands(commands)
-    message = ['Готово :3', f'IP: {ip}']
+    mac = get_mac(mac)
+    if mac:
+        ip = find_free_ip()
+        date = dt.now().strftime('%c')
+        firm_name = translit(firm_name, 'ru', reversed=True)
+        comment = f'"{date}; {firm_name}; {url}"'
+        commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
+                    f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
+                    f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
+        send_commands(commands)
+        message = ['Готово :3', f'IP: {ip}']
+
+    else:
+        message = ['Неправильный  MAC']
+
     result = {'message': message}
     return result
 

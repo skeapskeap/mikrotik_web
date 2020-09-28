@@ -19,7 +19,7 @@ class indexForm(View):
         action = request.POST.get('action')
         ip = request.POST.get('ip')
         mac = request.POST.get('mac')
-        reply = run_action(ip, action, mac)
+        reply = run_action(action, ip=ip, mac=mac)
         print(request.POST)
         return JsonResponse(reply, status=200)
 
@@ -35,6 +35,6 @@ class custForm(View):
         mac = request.POST.get('mac')
         firm_name = request.POST.get('firm_name')
         url = request.POST.get('url')
-        reply = run_action(action, ip, mac, firm_name, url)
+        reply = run_action(action, ip=ip, mac=mac, firm_name=firm_name, url=url)
         print(request.POST)
         return JsonResponse(reply, status=200)
