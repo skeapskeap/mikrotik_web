@@ -1,7 +1,9 @@
 # https://pypi.org/project/routeros/#description
 import paramiko
-from time import sleep
+from datetime import datetime as dt
 from routeros import login
+from time import sleep
+from transliterate import translit
 from .config import LOGIN, PASSWORD, IP, PORT
 
 connect_args = [LOGIN, PASSWORD, IP, PORT, True]
@@ -105,7 +107,7 @@ class AboutIP:
         return records
 
 
-def run_action(ip, action, mac):
+def run_action(action, ip, mac, firm_name, url):
     if action == 'check':
         return check(ip)
     if action == 'block':
@@ -114,10 +116,10 @@ def run_action(ip, action, mac):
         return block_ip(ip, block=False)
     if action == 'new_mac':
         return change_mac(ip, mac)
-    if action == 'delete_ip':
-        pass
-    if action == 'new_ip':
-        pass
+    if action == 'del':
+        return del_ip(ip)
+    if action == 'add':
+        return add_ip(mac, firm_name, url)
     else:
         return {'message': 'unknown command'}
 
@@ -156,7 +158,7 @@ def block_ip(ip, block=True):
         action = 'enable'
     ip = ip.strip()
     command_string = f'ip arp {action} [find where address={ip}]'
-    send_command(command_string)
+    send_commands([command_string])
     sleep(1)
     return check(ip)
 
@@ -166,8 +168,7 @@ def change_mac(ip, mac):
     if mac:
         commands = [f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
                     f'ip arp set  [find where address={ip}] mac-address={mac}']
-        for command in commands:
-            send_command(command)
+        send_commands(commands)
         message = 'Поменяно'
     else:
         message = 'Неправильный MAC'
@@ -176,6 +177,11 @@ def change_mac(ip, mac):
 
 
 def get_mac(mac):
+    '''
+    take string at input
+    try to parse it to mac address
+    return mac if success or False if not
+    '''
     separators = (' ', ':', '-', '.')
     permitted_chars = set('0123456789abcdef')
 
@@ -187,7 +193,7 @@ def get_mac(mac):
     return False
 
 
-def send_command(command):
+def send_commands(commands: list):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(hostname=IP,
@@ -195,4 +201,50 @@ def send_command(command):
                    password=PASSWORD,
                    look_for_keys=False,
                    allow_agent=False)
-    client.exec_command(command)
+    for command in commands:
+        client.exec_command(command)
+
+
+def find_free_ip() -> str:
+    routeros = login(*connect_args)
+    arp_records = routeros.query('/ip/arp/print').equal(
+        interface='vlan_123',
+        dynamic='false'
+        )
+    used_ip = set()
+    ip_pool = set()
+
+    for record in arp_records:
+        used_ip.add(record.get('address'))
+    for host in range(2, 256):
+        ip_pool.add(f'193.238.176.{host}')
+    for host in range(1, 255):
+        ip_pool.add(f'193.238.177.{host}')
+
+    free_ip = ip_pool - used_ip
+    return free_ip.pop()
+
+
+def add_ip(mac, firm_name, url):
+    ip = find_free_ip()
+    date = dt.now().strftime('%c')
+    firm_name = translit(firm_name, 'ru', reversed=True)
+    comment = f'"{date}; {firm_name}; {url}"'
+
+    commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
+                f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
+                f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
+    send_commands(commands)
+    message = ['Готово :3', f'IP: {ip}']
+    result = {'message': message}
+    return result
+
+
+def del_ip(ip):
+    commands = [f'ip arp remove [find where address={ip}]',
+                f'ip dhcp-server lease remove [find where address={ip}]',
+                f'ip firewall address-list remove [find where address={ip}]']
+    send_commands(commands)
+    message = ['Удалил :b', f'IP: {ip}']
+    result = {'message': message}
+    return result
