@@ -59,20 +59,8 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
                 var dhcp = response.dhcp
                 var acl = response.acl
                 var message = response.message
-                $("#result").empty()
-                $('#message').text(message)
-                for (step = 0; step < arp.length; step++){
-                    $('#result').append('<p>' + arp[step] + '</p>')
-                }
-                
-                for (step = 0; step < dhcp.length; step++){
-                    $('#result').append('<p>' + dhcp[step] + '</p>')
-                }
-                
-                for (step = 0; step < acl.length; step++){
-                    $('#result').append('<p>' + acl[step] + '</p>')
-                }
-                
+                $('#message').text(message[0])
+                $("#result").text(message[1])
                 
             }
         });

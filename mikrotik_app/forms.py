@@ -40,7 +40,8 @@ class CustOperations(forms.Form):
         label='IP address',
         protocol='IPv4',
         widget=forms.TextInput(attrs={'class': 'form-control',
-                                      'id': 'ip_field'})
+                                      'id': 'ip_field'}),
+        required=False
         )
     mac = MACAddressFormField(label='MAC address',
                               widget=forms.TextInput(attrs={
