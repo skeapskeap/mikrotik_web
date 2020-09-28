@@ -114,9 +114,9 @@ def run_action(ip, action, mac):
         return block_ip(ip, block=False)
     if action == 'new_mac':
         return change_mac(ip, mac)
-    if action == 'delete_ip':
-        pass
-    if action == 'new_ip':
+    if action == 'del':
+        return del_ip(ip)
+    if action == 'add':
         pass
     else:
         return {'message': 'unknown command'}
@@ -176,6 +176,11 @@ def change_mac(ip, mac):
 
 
 def get_mac(mac):
+    '''
+    take string at input
+    try to parse it to mac address
+    return mac if success or False if not
+    '''
     separators = (' ', ':', '-', '.')
     permitted_chars = set('0123456789abcdef')
 
@@ -196,3 +201,35 @@ def send_command(command):
                    look_for_keys=False,
                    allow_agent=False)
     client.exec_command(command)
+
+
+def find_free_ip() -> str:
+    routeros = login(*connect_args)
+    arp_records = routeros.query('/ip/arp/print').equal(
+        interface='vlan_123',
+        dynamic='false'
+        )
+    used_ip = set()
+    ip_pool = set()
+
+    for record in arp_records:
+        used_ip.add(record.get('address'))
+    for host in range(2, 256):
+        ip_pool.add(f'193.238.176.{host}')
+    for host in range(1, 255):
+        ip_pool.add(f'193.238.177.{host}')
+
+    free_ip = ip_pool - used_ip
+    return free_ip.pop()
+
+
+def del_ip(ip):
+    commands = [f'ip arp remove [find where address={ip}]',
+                f'ip dhcp-server lease remove [find where address={ip}]',
+                f'ip firewall address-list remove [find where address={ip}]']
+    for command in commands:
+        send_command(command)
+    message = 'Удалил :3'
+    result = {'message': message}
+    return result
+

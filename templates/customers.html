@@ -1,0 +1,49 @@
+
+{% extends "index.html" %}
+
+{% load static %}
+
+{% block form %}
+
+  <form method="post" id="main_form">
+    {% csrf_token %}
+    <div class="form-group">
+
+      <p>
+          <label for="id_action">Action:</label>
+          {{ form.action }}
+      </p>
+
+      <div id="del_div" class="form_hidden_field">
+        <p>
+          <label for="ip_field">IP address:</label>
+          {{ form.ip }}
+        </p>
+      </div>
+
+      <div id="add_div" class="form_hidden_field">
+        <p>
+          <label for="input_mac">MAC address:</label>
+          {{ form.mac }}
+        </p>
+
+        <p>
+          <label for="firm_name">Название компании:</label>
+          {{ form.firm_name }}
+        </p>
+
+        <p>
+          <label for="url">Ссылка на заявку:</label>
+          {{ form.url }}
+        </p>
+      </div>
+
+        <button class="form-control" type="submit" value="execute" name="execute">Выполнить</button>
+      </div>
+  </form>
+
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="{% static 'scripts/customers.js' %}"></script>
+
+{% endblock %}
