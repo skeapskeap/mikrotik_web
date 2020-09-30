@@ -15,10 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from register import views as reg_view
 admin.autodiscover()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('register/', reg_view.register, name='register'),
     path('', include('mikrotik_app.urls')),    
 ]
