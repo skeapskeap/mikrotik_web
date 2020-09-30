@@ -3,7 +3,7 @@
 {% block title %}Create Account{% endblock %}
 {% load crispy_forms_tags %}
 
-{% block reg %}
+{% block user %}
 <form method='POST' class="form-group">
     {% csrf_token %}
     {{form|crispy}}

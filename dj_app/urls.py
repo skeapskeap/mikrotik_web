@@ -21,5 +21,6 @@ admin.autodiscover()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', reg_view.register, name='register'),
-    path('', include('mikrotik_app.urls')),    
+    path('', include('django.contrib.auth.urls')),
+    path('', include('mikrotik_app.urls')),
 ]

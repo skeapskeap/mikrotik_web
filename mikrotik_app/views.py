@@ -26,6 +26,7 @@ class indexForm(View):
 
 class custForm(View):
     def get(self, request):
+        print(request.user.user_permissions)
         form = CustOperations()
         return render(request, 'customers.html', {"form": form})
 

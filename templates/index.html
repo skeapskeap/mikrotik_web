@@ -17,18 +17,23 @@
     <div class="container">
         {% include "navbar.html" %}
         <div class="row">
-            <div class="col-lg-4">
-              <h1></h1>
-              {% block reg %}
-              {% endblock %}
+          <div class="col-lg-4">
+            <h1></h1>
+            {% block user %}
+            {% endblock %}
+
+            {% if user.is_authenticated %}
               {% block form %}
               {% endblock %}
+            {% else %}
+              <p>You have to <a href="/login">Log In</a></p>
+            {% endif %}
             </div>
-            <div class="col-lg-6 pt-4 pl-5">
-              <h3 id=message></h3>
-              <p id=result>
-              </p>
-            </div>
+          <div class="col-lg-6 pt-4 pl-5">
+            <h3 id=message></h3>
+            <p id=result>
+            </p>
+          </div>
         </div>
     </div>
 
