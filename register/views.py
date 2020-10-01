@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect
 from .forms import RegisterForm
 
@@ -6,7 +7,9 @@ def register(response):
     if response.method == 'POST':
         form = RegisterForm(response.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()  # сохраняет нового пользователя в БД
+            default_group = Group.objects.get(name='view_only')  # получает объект группы по названию view_only
+            user.groups.add(default_group)  # добавляет новому пользователю группу по умолчанию
         return redirect('/')
     else:
         form = RegisterForm()

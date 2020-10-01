@@ -1,3 +1,4 @@
+from .decorators import is_authenticated, allow_access
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import View
@@ -11,6 +12,9 @@ def index(request):
 
 
 class indexForm(View):
+
+    @is_authenticated
+    @allow_access(allowed_groups={'billing', 'net_admin'})
     def get(self, request):
         form = IPOperations()
         return render(request, 'forms.html', {"form": form})
@@ -25,6 +29,9 @@ class indexForm(View):
 
 
 class custForm(View):
+
+    @is_authenticated
+    @allow_access(allowed_groups={'net_admin'})
     def get(self, request):
         print(request.user.user_permissions)
         form = CustOperations()

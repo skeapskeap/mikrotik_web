@@ -22,9 +22,11 @@
             {% block user %}
             {% endblock %}
 
+            {% block form %}
+            {% endblock %}
+
             {% if user.is_authenticated %}
-              {% block form %}
-              {% endblock %}
+              <p><a href="/logout">Logout</a></p>
             {% else %}
               <p>You have to <a href="/login">Log In</a></p>
             {% endif %}
