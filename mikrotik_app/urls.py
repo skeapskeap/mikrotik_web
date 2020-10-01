@@ -5,6 +5,6 @@ from . import views
 urlpatterns = [
     path('', views.Home.as_view(), name='homepage'),
     path('restricted/', views.deny_access, name='restricted'),
-    path('form/', views.indexForm.as_view(), name='form'),
-    path('customers/', views.custForm.as_view(), name='customers'),
+    path('bill/', views.Bill.as_view(), name='bill'),
+    path('config/', views.Config.as_view(), name='config'),
 ]

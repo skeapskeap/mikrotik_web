@@ -32,13 +32,13 @@ class Home(View):
         return JsonResponse(reply, status=200)
 
 
-class indexForm(View):
+class Bill(View):
 
     @is_authenticated
     @allow_access(allowed_groups={'billing', 'net_admin'})
     def get(self, request):
         form = IPOperations()
-        return render(request, 'forms.html', {"form": form})
+        return render(request, 'bill.html', {"form": form})
 
     def post(self, request):
         action = request.POST.get('action')
@@ -49,14 +49,14 @@ class indexForm(View):
         return JsonResponse(reply, status=200)
 
 
-class custForm(View):
+class Config(View):
 
     @is_authenticated
     @allow_access(allowed_groups={'net_admin'})
     def get(self, request):
         print(request.user.user_permissions)
         form = CustOperations()
-        return render(request, 'customers.html', {"form": form})
+        return render(request, 'config.html', {"form": form})
 
     def post(self, request):
         action = request.POST.get('action')
