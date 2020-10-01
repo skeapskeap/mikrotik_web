@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'register.apps.RegisterConfig',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +123,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [BASE_DIR/'static']
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+LOGIN_REDIRECT_URL = '/'  # redirect at homepage after login
+LOGOUT_REDIRECT_URL = '/'  # page to redirect at after logout

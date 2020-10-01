@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from .decorators import is_authenticated, allow_access
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.generic import View
 from .forms import CustOperations, IPOperations
@@ -6,11 +7,20 @@ from .mikrotik import run_action
 
 
 def index(request):
-    some_variable = 'this is some variable'
-    return render(request, 'index.html', locals())
+    if request.user.is_authenticated:
+        return render(request, 'index.html')
+    else:
+        return redirect('/login')
+
+
+def deny_access(request):
+    return render(request, 'restricted.html')
 
 
 class indexForm(View):
+
+    @is_authenticated
+    @allow_access(allowed_groups={'billing', 'net_admin'})
     def get(self, request):
         form = IPOperations()
         return render(request, 'forms.html', {"form": form})
@@ -25,7 +35,11 @@ class indexForm(View):
 
 
 class custForm(View):
+
+    @is_authenticated
+    @allow_access(allowed_groups={'net_admin'})
     def get(self, request):
+        print(request.user.user_permissions)
         form = CustOperations()
         return render(request, 'customers.html', {"form": form})
 
