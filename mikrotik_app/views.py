@@ -1,5 +1,5 @@
 from .decorators import is_authenticated, allow_access
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.generic import View
 from .forms import CustOperations, IPOperations
@@ -7,8 +7,14 @@ from .mikrotik import run_action
 
 
 def index(request):
-    some_variable = 'this is some variable'
-    return render(request, 'index.html', locals())
+    if request.user.is_authenticated:
+        return render(request, 'index.html')
+    else:
+        return redirect('/login')
+
+
+def deny_access(request):
+    return render(request, 'restricted.html')
 
 
 class indexForm(View):

@@ -7,7 +7,7 @@ def is_authenticated(view):
         if request.user.is_authenticated:
             return view(self, request, *args, **kwargs)
         else:
-            return redirect('/')
+            return redirect('/login')
     return wrapper
 
 
@@ -23,7 +23,7 @@ def allow_access(allowed_groups={}):
             if user_groups & allowed_groups:  # Если юзер входит хотя бы в одну из разрешенных групп
                 return view(self, request, *args, **kwargs)
             else:
-                return HttpResponse("You're not authorized to be here")
+                return redirect('/restricted')
         return wrapper
 
     return decorator
