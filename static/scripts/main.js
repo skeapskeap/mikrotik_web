@@ -43,32 +43,40 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
+    var pathname = window.location.pathname; // Returns path only (/path/example.html)
     // Submit post on submit
     $('form').on('submit', function(event) {
         event.preventDefault()
+        alert(pathname)
         $.ajax({
             url: '',
             type: 'post',
             data: $(this).serializeArray(),
             success: function(response) {
+                var pathname = window.location.pathname; // Returns path only (/path/example.html)
                 var arp = response.arp
                 var dhcp = response.dhcp
                 var acl = response.acl
                 var message = response.message
-                $("#result").empty()
-                $('#message').text(message)
-                for (step = 0; step < arp.length; step++){
-                    $('#result').append('<p>' + arp[step] + '</p>')
+                if (pathname === '/') {
+                    $('#check_result').text(message)  // Returns message in case of home page rendered
                 }
-                
-                for (step = 0; step < dhcp.length; step++){
-                    $('#result').append('<p>' + dhcp[step] + '</p>')
+
+                else {                                // All other cases
+                    $("#result").empty()
+                    $('#message').text(message)
+                    for (step = 0; step < arp.length; step++){
+                        $('#result').append('<p>' + arp[step] + '</p>')
+                    }
+                    
+                    for (step = 0; step < dhcp.length; step++){
+                        $('#result').append('<p>' + dhcp[step] + '</p>')
+                    }
+                    
+                    for (step = 0; step < acl.length; step++){
+                        $('#result').append('<p>' + acl[step] + '</p>')
+                    }
                 }
-                
-                for (step = 0; step < acl.length; step++){
-                    $('#result').append('<p>' + acl[step] + '</p>')
-                }
-                
                 
             }
         });

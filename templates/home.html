@@ -1,0 +1,18 @@
+{% extends 'index.html' %}
+
+{% load static %}
+
+{% block homepage %}
+<form method="post" id="main_form">
+    {% csrf_token %}
+    <div class="form-group">
+        <p>
+            <label for="id_ip">IP address:</label>
+            {{ form.ip }}
+        </p>
+        <button class="form-control" type="submit" value="execute" name="execute">Проверить</button>
+    </div>
+</form>
+
+<script src="{% static 'scripts/main.js' %}"></script>
+{% endblock %}

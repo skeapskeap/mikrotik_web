@@ -9,6 +9,14 @@ ACTIONS = (
           )
 
 
+class CheckIP(forms.Form):
+    ip = forms.GenericIPAddressField(
+        label='IP address',
+        protocol='IPv4',
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
+
 class IPOperations(forms.Form):
     action = forms.ChoiceField(
         choices=ACTIONS,
