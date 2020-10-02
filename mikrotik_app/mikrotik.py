@@ -1,13 +1,11 @@
 # https://pypi.org/project/routeros/#description
-import paramiko
+from .config import connect_args
+from .decorators import proper_mac, unique_mac
+from .utils import find_free_ip, send_commands
 from datetime import datetime as dt
-from .decorators import unique_mac
 from routeros import login
 from time import sleep
 from transliterate import translit
-from .config import LOGIN, PASSWORD, IP, PORT
-
-connect_args = [LOGIN, PASSWORD, IP, PORT, True]
 
 
 class AboutIP:
@@ -172,89 +170,34 @@ def block_ip(ip, block=True):
     return check(ip)
 
 
+@proper_mac
 @unique_mac
 def change_mac(**kwargs):
     ip, mac = kwargs.values()
-    mac = get_mac(mac)
-    if mac:
-        commands = [f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
-                    f'ip arp set  [find where address={ip}] mac-address={mac}']
-        send_commands(commands)
-        message = 'Поменяно'
-    else:
-        message = 'Неправильный MAC'
-    result = {'message': message}
+
+    commands = [f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
+                f'ip arp set  [find where address={ip}] mac-address={mac}']
+
+    send_commands(commands)
+    result = {'message': 'Поменяно'}
     return result
 
 
-def get_mac(mac):
-    '''
-    take string at input
-    try to parse it to mac address
-    return mac if success or False if not
-    '''
-    separators = (' ', ':', '-', '.')
-    permitted_chars = set('0123456789abcdef')
-
-    for separator in separators:
-        mac = mac.replace(separator, '')
-    mac = mac.lower()
-    if len(mac) == 12 and set(mac) <= permitted_chars:
-        return mac
-    return False
-
-
-def send_commands(commands: list):
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(hostname=IP,
-                   username=LOGIN,
-                   password=PASSWORD,
-                   look_for_keys=False,
-                   allow_agent=False)
-    for command in commands:
-        client.exec_command(command)
-
-
-def find_free_ip() -> str:
-    routeros = login(*connect_args)
-    arp_records = routeros.query('/ip/arp/print').equal(
-        interface='vlan_123',
-        dynamic='false'
-        )
-    used_ip = set()
-    ip_pool = set()
-
-    for record in arp_records:
-        used_ip.add(record.get('address'))
-    for host in range(2, 256):
-        ip_pool.add(f'193.238.176.{host}')
-    for host in range(1, 255):
-        ip_pool.add(f'193.238.177.{host}')
-
-    free_ip = ip_pool - used_ip
-    return free_ip.pop()
-
-
+@proper_mac
 @unique_mac
 def add_ip(**kwargs):
     mac, firm_name, url = kwargs.values()
-    mac = get_mac(mac)
-    if mac:
-        ip = find_free_ip()
-        date = dt.now().strftime('%c')
-        firm_name = translit(firm_name, 'ru', reversed=True)
-        comment = f'"{date}; {firm_name}; {url}"'
-        commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
-                    f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
-                    f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
-        send_commands(commands)
-        message = ['Готово :3', f'IP: {ip}']
 
-    else:
-        message = ['Неправильный  MAC']
+    ip = find_free_ip()
+    date = dt.now().strftime('%c')
+    firm_name = translit(firm_name, 'ru', reversed=True)
+    comment = f'"{date}; {firm_name}; {url}"'
+    commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
+                f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
+                f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
 
-    result = {'message': message}
+    send_commands(commands)
+    result = {'message': ['Готово :3', f'IP: {ip}']}
     return result
 
 

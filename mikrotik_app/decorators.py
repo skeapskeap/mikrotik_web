@@ -20,7 +20,7 @@ def allow_access(allowed_groups={}):
         def wrapper(self, request, *args, **kwargs):
             user_groups = set()
             if request.user.groups.exists():
-                group_count = request.user.groups.all().count()                                 # Помещает все группы, к которым 
+                group_count = request.user.groups.all().count()                                 # Помещает все группы, к которым
                 user_groups = {request.user.groups.all()[i].name for i in range(group_count)}   # принадлежит юзер в сет
 
             if user_groups & allowed_groups:  # Если юзер входит хотя бы в одну из разрешенных групп
@@ -43,8 +43,33 @@ def unique_mac(func):
         dhcp_overlap = routeros.query(dhcp_print).equal(**options)
 
         if arp_overlap or dhcp_overlap:
-            message = ['Такой MAC уже существует']
-            return {'message': message}
+            return {'message': ['Такой MAC уже существует']}
         else:
             return func(**kwargs)
+    return wrapper
+
+
+def proper_mac(func):
+    '''
+    take string from input
+    try to parse it to mac address
+    return mac if success or False if not
+    '''
+    def wrapper(**kwargs):
+
+        mac = kwargs.get('mac')
+        separators = (' ', ':', '-', '.')
+        permitted_chars = set('0123456789abcdef')
+
+        for separator in separators:
+            mac = mac.replace(separator, '')
+        mac = mac.lower()
+
+        if len(mac) == 12 and set(mac) <= permitted_chars:
+            mac = mac.upper()
+            mac = ':'.join([ mac[:2], mac[2:4], mac[4:6], mac[6:8], mac[8:10], mac[10:12] ])
+            kwargs['mac'] = mac
+            return func(**kwargs)
+
+        return {'message': ['Неправильный  MAC']}
     return wrapper
