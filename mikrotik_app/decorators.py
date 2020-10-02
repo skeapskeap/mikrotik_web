@@ -1,8 +1,6 @@
 from django.shortcuts import redirect
 from routeros import login
-from .config import LOGIN, PASSWORD, IP, PORT
-
-connect_args = [LOGIN, PASSWORD, IP, PORT, True]
+from .config import connect_args
 
 
 def is_authenticated(view):
