@@ -1,9 +1,7 @@
 # https://pypi.org/project/routeros/#description
-from .config import connect_args
 from .decorators import proper_mac, unique_mac
-from .utils import find_free_ip, send_commands
+from .utils import find_free_ip, mikrotik, send_commands
 from datetime import datetime as dt
-from routeros import login
 from time import sleep
 from transliterate import translit
 
@@ -20,8 +18,7 @@ class AboutIP:
         return f'<AboutIP: {self.ip}>'
 
     def query(self, query) -> tuple:
-        routeros = login(*connect_args)
-        reply = routeros.query(query).equal(address=self.ip, dynamic='false')
+        reply = mikrotik.query(query).equal(address=self.ip, dynamic='false')
         if not reply:
             return False
         return reply

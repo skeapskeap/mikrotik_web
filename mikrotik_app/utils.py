@@ -2,6 +2,9 @@ import paramiko
 from .config import LOGIN, PASSWORD, IP, connect_args
 from routeros import login
 
+# НЕ УДАЛЯТЬ
+mikrotik = login(*connect_args)  # mikrotik импортируется отсюда в другие файлы
+
 
 def send_commands(commands: list):
     client = paramiko.SSHClient()
@@ -16,8 +19,7 @@ def send_commands(commands: list):
 
 
 def find_free_ip() -> str:
-    routeros = login(*connect_args)
-    arp_records = routeros.query('/ip/arp/print').equal(
+    arp_records = mikrotik.query('/ip/arp/print').equal(
         interface='vlan_123',
         dynamic='false'
         )
