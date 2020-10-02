@@ -43,11 +43,9 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
-    var pathname = window.location.pathname; // Returns path only (/path/example.html)
     // Submit post on submit
     $('form').on('submit', function(event) {
         event.preventDefault()
-        alert(pathname)
         $.ajax({
             url: '',
             type: 'post',

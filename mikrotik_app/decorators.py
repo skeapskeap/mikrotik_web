@@ -1,5 +1,8 @@
-from django.http import HttpResponse
 from django.shortcuts import redirect
+from routeros import login
+from .config import LOGIN, PASSWORD, IP, PORT
+
+connect_args = [LOGIN, PASSWORD, IP, PORT, True]
 
 
 def is_authenticated(view):
@@ -27,3 +30,21 @@ def allow_access(allowed_groups={}):
         return wrapper
 
     return decorator
+
+
+def unique_mac(func):
+    def wrapper(**kwargs):
+        routeros = login(*connect_args)
+        arp_print = '/ip/arp/print'
+        dhcp_print = '/ip/dhcp-server/lease/print'
+        options = {'mac-address': kwargs.get('mac'), 'dynamic': 'false'}
+
+        arp_overlap = routeros.query(arp_print).equal(**options)
+        dhcp_overlap = routeros.query(dhcp_print).equal(**options)
+
+        if arp_overlap or dhcp_overlap:
+            message = ['Такой MAC уже существует']
+            return {'message': message}
+        else:
+            return func(**kwargs)
+    return wrapper

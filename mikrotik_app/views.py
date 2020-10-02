@@ -27,7 +27,7 @@ class Home(View):
 
     def post(self, request):
         ip = request.POST.get('ip')
-        reply = run_action('check', ip=ip)
+        reply = run_action(action='check', ip=ip)
         print(request.POST)
         return JsonResponse(reply, status=200)
 
@@ -44,7 +44,7 @@ class Bill(View):
         action = request.POST.get('action')
         ip = request.POST.get('ip')
         mac = request.POST.get('mac')
-        reply = run_action(action, ip=ip, mac=mac)
+        reply = run_action(action=action, ip=ip, mac=mac)
         print(request.POST)
         return JsonResponse(reply, status=200)
 
@@ -64,6 +64,6 @@ class Config(View):
         mac = request.POST.get('mac')
         firm_name = request.POST.get('firm_name')
         url = request.POST.get('url')
-        reply = run_action(action, ip=ip, mac=mac, firm_name=firm_name, url=url)
+        reply = run_action(action=action, ip=ip, mac=mac, firm_name=firm_name, url=url)
         print(request.POST)
         return JsonResponse(reply, status=200)

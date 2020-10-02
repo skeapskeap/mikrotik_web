@@ -1,6 +1,7 @@
 # https://pypi.org/project/routeros/#description
 import paramiko
 from datetime import datetime as dt
+from .decorators import unique_mac
 from routeros import login
 from time import sleep
 from transliterate import translit
@@ -107,7 +108,13 @@ class AboutIP:
         return records
 
 
-def run_action(action, ip='', mac='', firm_name='', url=''):
+def run_action(**kwargs):
+    action      = kwargs.get('action')
+    ip          = kwargs.get('ip')
+    mac         = kwargs.get('mac')
+    firm_name   = kwargs.get('firm_name')
+    url         = kwargs.get('url')
+
     if action == 'check':
         return check(ip)
     if action == 'block':
@@ -115,11 +122,11 @@ def run_action(action, ip='', mac='', firm_name='', url=''):
     if action == 'unblock':
         return block_ip(ip, block=False)
     if action == 'new_mac':
-        return change_mac(ip, mac)
+        return change_mac(ip=ip, mac=mac)
     if action == 'del':
         return del_ip(ip)
     if action == 'add':
-        return add_ip(mac, firm_name, url)
+        return add_ip(mac=mac, firm_name=firm_name, url=url)
     else:
         return {'message': 'unknown command'}
 
@@ -157,13 +164,17 @@ def block_ip(ip, block=True):
     else:
         action = 'enable'
     ip = ip.strip()
-    command_string = f'ip arp {action} [find where address={ip}]'
-    send_commands([command_string])
+    commands = [f'ip arp {action} [find where address={ip}]',
+                f'ip dhcp-server lease {action} [find where address={ip}]',
+                f'ip firewall address-list {action} [find where address={ip}]']
+    send_commands(commands)
     sleep(1)
     return check(ip)
 
 
-def change_mac(ip, mac):
+@unique_mac
+def change_mac(**kwargs):
+    ip, mac = kwargs.values()
     mac = get_mac(mac)
     if mac:
         commands = [f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
@@ -191,10 +202,6 @@ def get_mac(mac):
     if len(mac) == 12 and set(mac) <= permitted_chars:
         return mac
     return False
-
-
-def unique_mac(mac):
-    return True
 
 
 def send_commands(commands: list):
@@ -229,11 +236,9 @@ def find_free_ip() -> str:
     return free_ip.pop()
 
 
-def add_ip(mac, firm_name, url):
-    if not unique_mac(mac):
-        message = ['Такой MAC уже существует']
-        return {'message': message}
-
+@unique_mac
+def add_ip(**kwargs):
+    mac, firm_name, url = kwargs.values()
     mac = get_mac(mac)
     if mac:
         ip = find_free_ip()
