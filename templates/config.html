@@ -14,19 +14,21 @@
           {{ form.action }}
       </p>
 
-      <div id="del_div" class="form_hidden_field">
+      <div id="ip_div" class="form_hidden_field">
         <p>
           <label for="ip_field">IP address:</label>
           {{ form.ip }}
         </p>
       </div>
 
-      <div id="add_div" class="form_hidden_field">
+      <div id="mac_div" class="form_hidden_field">
         <p>
           <label for="input_mac">MAC address:</label>
           {{ form.mac }}
         </p>
+      </div>
 
+      <div id="add_div" class="form_hidden_field">
         <p>
           <label for="firm_name">Название компании:</label>
           {{ form.firm_name }}
@@ -44,6 +46,6 @@
 
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="{% static 'scripts/customers.js' %}"></script>
+  <script src="{% static 'scripts/config.js' %}"></script>
 
 {% endblock %}

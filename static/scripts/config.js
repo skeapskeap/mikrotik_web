@@ -1,6 +1,7 @@
 $(document).ready(function (){ //метод jQuery ready() начинает работать когда готов DOM, медиа-контент может загружаться позже
     
     $("#add_div").css('display', 'block') // устанавливает дефолтное значение display для раздела добавления пользователя
+    $("#mac_div").css('display', 'block')
 
     function getCookie(name) { //функция парсит document.cookie по аргументу (name='csrftoken') и возвращает значение токена
         var cookieValue = null;
@@ -34,16 +35,24 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
-    $("#id_action").change(function() {           
-        var action = $("#id_action").val();        
-        if (action === "del") {
-            $("#del_div").css('display', 'block')
+    $("#id_action").change(function() {             //выполняется если в поле action что-то поменялось        
+        var action = $("#id_action").val();         //узнает, какое значение выбрано в action  
+        if (action === "del") {                     //если выбрано "удалить"
+            $("#ip_div").css('display', 'block')    //делает свойство css "display"="block" для id=ip_div 
+            $("#mac_div").css('display', 'none')
             $("#add_div").css('display', 'none')
         }
 
-        else {
-            $("#del_div").css('display', 'none');
-            $("#add_div").css('display', 'block');
+        else if (action === "new_mac") {
+            $("#ip_div").css('display', 'block');
+            $("#mac_div").css('display', 'block');
+            $("#add_div").css('display', 'none');
+        }
+
+        else {      //if action = 'add'
+            $("#ip_div").css('display', 'none')     //делает свойство css "display"="none" для id=ip_div 
+            $("#mac_div").css('display', 'block')
+            $("#add_div").css('display', 'block')
         }
     });
 
