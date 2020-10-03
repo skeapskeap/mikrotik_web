@@ -32,17 +32,6 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
-    $("#id_action").change(function() {             //выполняется если в поле action что-то поменялось
-        var action = $("#id_action").val();         //узнает, какое значение выбрано в action
-        if (action === "new_mac") {                 //если выбрано "поменять мак"
-            $("#input_mac").css('display', 'block');//делает свойство css "display"="block" для id=input_mac 
-        }
-
-        else {
-            $("#input_mac").css('display', 'none');//делает свойство css "display"="none" для id=input_mac 
-        }
-    });
-
     // Submit post on submit
     $('form').on('submit', function(event) {
         event.preventDefault()
