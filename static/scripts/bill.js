@@ -40,35 +40,46 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
             type: 'post',
             data: $(this).serializeArray(),
             success: function(response) {
-                var pathname = window.location.pathname; // Returns path only (/path/example.html)
-                var arp = response.arp
-                var dhcp = response.dhcp
-                var acl = response.acl
-                var message = response.message
-                if (pathname === '/') {
-                    $('#check_result').text(message)  // Returns message in case of home page rendered
+                if (response.error) {               // if there is validation error in form
+                    $('#check_result').empty()
+                    $('#error').text(response.error)
                 }
 
-                else {                                // All other cases
-                    $("#result").empty()
-                    $('#message').text(message)
-                    for (step = 0; step < arp.length; step++){
-                        $('#result').append('<p>' + arp[step] + '</p>')
-                    }
+                else {                              // if validation passed
+                    $('#error').empty()
+                    var pathname = window.location.pathname; // Returns path only (/path/example.html)
+                    var arp = response.arp
+                    var dhcp = response.dhcp
+                    var acl = response.acl
+                    var message = response.message
                     
-                    for (step = 0; step < dhcp.length; step++){
-                        $('#result').append('<p>' + dhcp[step] + '</p>')
+                    if (pathname === '/') {
+                        $('#check_result').text(message)  // Returns message in case of home page rendered
                     }
-                    
-                    for (step = 0; step < acl.length; step++){
-                        $('#result').append('<p>' + acl[step] + '</p>')
+
+                    else {                                // All other cases
+                        $("#result").empty()
+                        $('#message').text(message)
+                        for (step = 0; step < arp.length; step++){
+                            $('#result').append('<p>' + arp[step] + '</p>')
+                        }
+                        
+                        for (step = 0; step < dhcp.length; step++){
+                            $('#result').append('<p>' + dhcp[step] + '</p>')
+                        }
+                        
+                        for (step = 0; step < acl.length; step++){
+                            $('#result').append('<p>' + acl[step] + '</p>')
+                        }
                     }
+
                 }
                 
-            }
-        });
+            } //close success block
+
+        }); //close ajax block
         
         
-    });
+    }); //close form submit block
 
 });

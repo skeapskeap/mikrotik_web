@@ -26,9 +26,18 @@ class Home(View):
         return render(request, 'home.html', {"form": form})
 
     def post(self, request):
-        ip = request.POST.get('ip')
-        reply = run_action(action='check', ip=ip)
-        print(request.POST)
+        form = CheckIP(request.POST or None)
+        if form.is_valid():
+            ip = request.POST.get('ip')
+            reply = run_action(action='check', ip=ip)
+        else:
+            '''
+            working code for multiple errors
+                keys = form.errors.keys()
+                errors = [dict(form.errors.items()).get(key) for key in keys]
+            '''
+            error = dict(form.errors.items()).get('ip')
+            reply = {'error': error}
         return JsonResponse(reply, status=200)
 
 
