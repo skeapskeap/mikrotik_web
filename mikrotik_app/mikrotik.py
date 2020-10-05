@@ -144,7 +144,7 @@ def check(ip):
     else:
         acl = ['no records found']
 
-    message = 'Всё хорошо' if about_ip.summary_check() else 'Не всё хорошо'
+    message = ['Всё хорошо'] if about_ip.summary_check() else ['Не всё хорошо']
 
     result = {'arp': arp,
               'dhcp': dhcp,
