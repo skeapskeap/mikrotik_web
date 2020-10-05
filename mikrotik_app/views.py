@@ -50,11 +50,15 @@ class Bill(View):
         return render(request, 'bill.html', {"form": form})
 
     def post(self, request):
-        action = request.POST.get('action')
-        ip = request.POST.get('ip')
-        mac = request.POST.get('mac')
-        reply = run_action(action=action, ip=ip, mac=mac)
-        print(request.POST)
+        form = IPOperations(request.POST or None)
+        if form.is_valid():
+            print(request.POST)
+            action = request.POST.get('action')
+            ip = request.POST.get('ip')
+            reply = run_action(action=action, ip=ip)
+        else:
+            error = dict(form.errors.items()).get('ip')
+            reply = {'error': error}
         return JsonResponse(reply, status=200)
 
 
