@@ -1,13 +1,6 @@
 from django import forms
 from macaddress.fields import MACAddressFormField
 
-ACTIONS = (
-            ('check', 'Проверить статус'),
-            ('block', 'Заблокировать'),
-            ('unblock', 'Разблокировать'),
-            ('new_mac', 'Новый MAC')
-          )
-
 
 class CheckIP(forms.Form):
     ip = forms.GenericIPAddressField(
@@ -19,7 +12,11 @@ class CheckIP(forms.Form):
 
 class IPOperations(forms.Form):
     action = forms.ChoiceField(
-        choices=ACTIONS,
+        choices=(
+                    ('check', 'Проверить статус'),
+                    ('block', 'Заблокировать'),
+                    ('unblock', 'Разблокировать')
+                ),
         widget=forms.Select(attrs={'class': 'form-control'})
         )
     ip = forms.GenericIPAddressField(
@@ -39,7 +36,8 @@ class CustOperations(forms.Form):
     action = forms.ChoiceField(
         choices=(
             ('add', 'Добавить пользователя'),
-            ('del', 'Удалить пользователя')
+            ('del', 'Удалить пользователя'),
+            ('new_mac', 'Новый MAC')
             ),
         widget=forms.Select(attrs={'class': 'form-control'})
         )
