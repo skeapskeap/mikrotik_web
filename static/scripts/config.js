@@ -64,12 +64,20 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
             type: 'post',
             data: $(this).serializeArray(),
             success: function(response) {
-                var arp = response.arp
-                var dhcp = response.dhcp
-                var acl = response.acl
-                var message = response.message
-                $('#message').text(message[0])
-                $("#result").text(message[1])
+                $("p[id*='error']").empty()   //clear all previous errors
+                if (response.error) {               // if there is validation error in form
+                    $('#result').empty()
+                    $('#common_error').text(response.error["__all__"])
+                    $('#mac_error').text(response.error["mac"])
+                    $('#ip_error').text(response.error["ip"])
+                    $('#url_error').text(response.error["url"])
+                }
+
+                else {
+                    var message = response.message
+                    $('#message').text(message[0])
+                    $("#result").text(message[1]) 
+                }
                 
             }
         });

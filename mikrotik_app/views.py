@@ -72,11 +72,18 @@ class Config(View):
         return render(request, 'config.html', {"form": form})
 
     def post(self, request):
-        action = request.POST.get('action')
-        ip = request.POST.get('ip')
-        mac = request.POST.get('mac')
-        firm_name = request.POST.get('firm_name')
-        url = request.POST.get('url')
-        reply = run_action(action=action, ip=ip, mac=mac, firm_name=firm_name, url=url)
+        form = CustOperations(request.POST or None)
         print(request.POST)
+        if form.is_valid():
+            action = request.POST.get('action')
+            ip = request.POST.get('ip')
+            mac = request.POST.get('mac')
+            firm_name = request.POST.get('firm_name')
+            url = request.POST.get('url')
+            reply = run_action(action=action, ip=ip, mac=mac, firm_name=firm_name, url=url)
+        else:
+            for _ in form.errors.items():
+                print(f'errors = {_}')
+            error = dict(form.errors.items())
+            reply = {'error': error}
         return JsonResponse(reply, status=200)
