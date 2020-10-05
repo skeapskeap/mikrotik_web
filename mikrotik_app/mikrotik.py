@@ -144,7 +144,7 @@ def check(ip):
     else:
         acl = ['no records found']
 
-    message = 'Всё хорошо' if about_ip.summary_check() else 'Не всё хорошо'
+    message = ['Всё хорошо'] if about_ip.summary_check() else ['Не всё хорошо']
 
     result = {'arp': arp,
               'dhcp': dhcp,
@@ -176,7 +176,7 @@ def change_mac(**kwargs):
                 f'ip arp set  [find where address={ip}] mac-address={mac}']
 
     send_commands(commands)
-    result = {'message': 'Поменяно'}
+    result = {'message': ['Поменяно']}
     return result
 
 
