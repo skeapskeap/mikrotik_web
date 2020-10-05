@@ -2,8 +2,9 @@ import paramiko
 from .config import LOGIN, PASSWORD, IP, connect_args
 from routeros import login
 
-# НЕ УДАЛЯТЬ
-mikrotik = login(*connect_args)  # mikrotik импортируется отсюда в другие файлы
+
+def mikrotik():
+    return login(*connect_args)
 
 
 def send_commands(commands: list):

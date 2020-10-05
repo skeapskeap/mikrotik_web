@@ -35,8 +35,8 @@ def unique_mac(func):
         dhcp_print = '/ip/dhcp-server/lease/print'
         options = {'mac-address': kwargs.get('mac'), 'dynamic': 'false'}
 
-        arp_overlap = mikrotik.query(arp_print).equal(**options)
-        dhcp_overlap = mikrotik.query(dhcp_print).equal(**options)
+        arp_overlap = mikrotik().query(arp_print).equal(**options)
+        dhcp_overlap = mikrotik().query(dhcp_print).equal(**options)
 
         if arp_overlap or dhcp_overlap:
             return {'message': ['Такой MAC уже существует']}
