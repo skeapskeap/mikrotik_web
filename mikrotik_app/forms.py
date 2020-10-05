@@ -24,13 +24,7 @@ class IPOperations(forms.Form):
         protocol='IPv4',
         widget=forms.TextInput(attrs={'class': 'form-control'})
         )
-    mac = MACAddressFormField(label='MAC address',
-                              widget=forms.TextInput(attrs={
-                                  'label': 'MAC',
-                                  'class': 'form-control',
-                                  'id': 'input_mac'
-                                  }), required=False)
-
+        
 
 class CustOperations(forms.Form):
     action = forms.ChoiceField(
