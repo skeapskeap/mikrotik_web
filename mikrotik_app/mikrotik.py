@@ -203,6 +203,6 @@ def del_ip(ip):
                 f'ip dhcp-server lease remove [find where address={ip}]',
                 f'ip firewall address-list remove [find where address={ip}]']
     send_commands(commands)
-    message = 'Удалил :b', f'IP: {ip}'
-    result = {'message': [message]}
+    message = ['Удалил :b', f'IP: {ip}']
+    result = {'message': message}
     return result

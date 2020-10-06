@@ -20,7 +20,7 @@ def send_commands(commands: list):
 
 
 def find_free_ip() -> str:
-    arp_records = mikrotik.query('/ip/arp/print').equal(
+    arp_records = mikrotik().query('/ip/arp/print').equal(
         interface='vlan_123',
         dynamic='false'
         )
