@@ -29,6 +29,8 @@ class Home(View):
         form = CheckIP(request.POST or None)
         if form.is_valid():
             ip = request.POST.get('ip')
+            print(f'### user {request.user} POSTed:')
+            print(request.POST)
             reply = run_action(action='check', ip=ip)
         else:
             '''
@@ -52,9 +54,10 @@ class Bill(View):
     def post(self, request):
         form = IPOperations(request.POST or None)
         if form.is_valid():
-            print(request.POST)
             action = request.POST.get('action')
             ip = request.POST.get('ip')
+            print(f'### user {request.user} POSTed:')
+            print(request.POST)
             reply = run_action(action=action, ip=ip)
         else:
             error = dict(form.errors.items()).get('ip')
@@ -73,13 +76,14 @@ class Config(View):
 
     def post(self, request):
         form = CustOperations(request.POST or None)
-        print(request.POST)
         if form.is_valid():
             action = request.POST.get('action')
             ip = request.POST.get('ip')
             mac = request.POST.get('mac')
             firm_name = request.POST.get('firm_name')
             url = request.POST.get('url')
+            print(f'### user {request.user} POSTed:')
+            print(request.POST)
             reply = run_action(action=action, ip=ip, mac=mac, firm_name=firm_name, url=url)
         else:
             for _ in form.errors.items():
