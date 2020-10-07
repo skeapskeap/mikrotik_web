@@ -70,7 +70,6 @@ class Config(View):
     @is_authenticated
     @allow_access(allowed_groups={'net_admin'})
     def get(self, request):
-        print(request.user.user_permissions)
         form = CustOperations()
         return render(request, 'config.html', {"form": form})
 
