@@ -36,3 +36,9 @@ def find_free_ip() -> str:
 
     free_ip = ip_pool - used_ip
     return free_ip.pop()
+
+
+def parse_post(post_obj):
+    data = dict(post_obj)
+    del data['csrfmiddlewaretoken']
+    return data
