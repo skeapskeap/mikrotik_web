@@ -52,8 +52,9 @@ def proper_mac(func):
     return mac if success or False if not
     '''
     def wrapper(**kwargs):
-
         mac = kwargs.get('mac')
+        if not mac:
+            return func(**kwargs)
         separators = (' ', ':', '-', '.')
         permitted_chars = set('0123456789abcdef')
 
