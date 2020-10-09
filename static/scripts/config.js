@@ -56,6 +56,7 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         $("p[id*='error']").empty()   //clear all previous errors
         if (response.error) {               // if there is validation error in form
             $('#result').empty()
+            $('#message').empty()
             $('#common_error').text(response.error["__all__"])
             $('#mac_error').text(response.error["mac"])
             $('#ip_error').text(response.error["ip"])
@@ -64,8 +65,8 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
 
         else {
             var message = response.message
-            $('#message').text(message[0])
             $("#result").empty()
+            $('#message').text(message[0])
             $("#result").append('<p><b>Executed commands:</b></p>')
             for (step = 0; step < message[1].length; step++){
                 $('#result').append('<p>&nbsp;&nbsp;&nbsp;' + message[1][step] + '</p>')
