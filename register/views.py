@@ -10,7 +10,9 @@ def register(response):
             user = form.save()  # сохраняет нового пользователя в БД
             default_group = Group.objects.get(name='view_only')  # получает объект группы по названию view_only
             user.groups.add(default_group)  # добавляет новому пользователю группу по умолчанию
-        return redirect('/')
+            return redirect('/')
+        else:
+            return render(response, "register/register.html", {'form': form})
     else:
         form = RegisterForm()
 

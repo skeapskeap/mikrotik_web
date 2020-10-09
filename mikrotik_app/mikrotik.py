@@ -1,7 +1,6 @@
 # https://pypi.org/project/routeros/#description
 from .decorators import proper_mac, unique_mac
-from .utils import find_free_ip, mikrotik, send_commands
-from datetime import datetime as dt
+from .utils import find_free_ip, mikrotik, send_commands, time_now
 from time import sleep
 from transliterate import translit
 
@@ -116,8 +115,8 @@ def run_action(**kwargs):
         return block_ip(ip, block=True)
     if action == 'unblock':
         return block_ip(ip, block=False)
-    if action == 'new_mac':
-        return change_mac(ip=ip, mac=mac)
+    if action == 'update':
+        return update_data(ip=ip, mac=mac, firm_name=firm_name, url=url)
     if action == 'del':
         return del_ip(ip)
     if action == 'add':
@@ -169,14 +168,21 @@ def block_ip(ip, block=True):
 
 @proper_mac
 @unique_mac
-def change_mac(**kwargs):
-    ip, mac = kwargs.values()
-
-    commands = [f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
-                f'ip arp set  [find where address={ip}] mac-address={mac}']
+def update_data(**kwargs):
+    ip, mac, firm_name, url = kwargs.values()
+    commands = []
+    if mac:
+        commands.extend([f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
+                         f'ip arp set  [find where address={ip}] mac-address={mac}'])
+    if firm_name or url:
+        firm_name = translit(firm_name, 'ru', reversed=True)
+        comment = f'"{time_now()}; {firm_name}; {url}"'
+        commands.extend([f'ip dhcp-server lease set [find where address={ip}] comment={comment}',
+                         f'ip arp set  [find where address={ip}] comment={comment}',
+                         f'ip firewall address-list set  [find where address={ip}] comment={comment}'])
 
     send_commands(commands)
-    result = {'message': ['Поменяно']}
+    result = {'message': ['Поменяно', commands]}
     return result
 
 
@@ -186,15 +192,14 @@ def add_ip(**kwargs):
     mac, firm_name, url = kwargs.values()
 
     ip = find_free_ip()
-    date = dt.now().strftime('%c')
     firm_name = translit(firm_name, 'ru', reversed=True)
-    comment = f'"{date}; {firm_name}; {url}"'
+    comment = f'"{time_now()}; {firm_name}; {url}"'
     commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
                 f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
                 f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
 
     send_commands(commands)
-    result = {'message': ['Готово :3', f'IP: {ip}']}
+    result = {'message': [f'Добавлен IP: {ip}', commands]}
     return result
 
 
@@ -203,6 +208,5 @@ def del_ip(ip):
                 f'ip dhcp-server lease remove [find where address={ip}]',
                 f'ip firewall address-list remove [find where address={ip}]']
     send_commands(commands)
-    message = ['Удалил :b', f'IP: {ip}']
-    result = {'message': message}
+    result = {'message': [f'Удалён IP: {ip}', commands]}
     return result

@@ -1,6 +1,7 @@
 import paramiko
 from .config import LOGIN, PASSWORD, IP, connect_args
 from routeros import login
+from datetime import datetime as dt
 
 
 def mikrotik():
@@ -36,3 +37,14 @@ def find_free_ip() -> str:
 
     free_ip = ip_pool - used_ip
     return free_ip.pop()
+
+
+def parse_post(post_obj):
+    data = dict(post_obj)
+    del data['csrfmiddlewaretoken']
+    return data
+
+
+def time_now():
+    time = dt.now().strftime('%c')
+    return time

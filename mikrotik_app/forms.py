@@ -31,7 +31,7 @@ class CustOperations(forms.Form):
         choices=(
             ('add', 'Добавить пользователя'),
             ('del', 'Удалить пользователя'),
-            ('new_mac', 'Новый MAC')
+            ('update', 'Изменить данные')
             ),
         widget=forms.Select(attrs={'class': 'form-control'}))
 
@@ -80,15 +80,16 @@ class CustOperations(forms.Form):
                 return cleaned_data
             else:
                 raise forms.ValidationError('Fill empty fields')
-        
+
         if action == 'del':
             if self.data.get('ip'):
                 return cleaned_data
             else:
                 raise forms.ValidationError('Fill IP field')
 
-        if action == 'new_mac':
-            if self.data.get('ip') and self.data.get('mac'):
+        if action == 'update':
+            optional = self.data.get('mac') or self.data.get('firm_name') or self.data.get('url')
+            if self.data.get('ip') and optional:
                 return cleaned_data
             else:
-                raise forms.ValidationError('Fill IP and MAC fields')
+                raise forms.ValidationError('Fill IP and optional fields')

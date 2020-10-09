@@ -1,7 +1,6 @@
 $(document).ready(function (){ //метод jQuery ready() начинает работать когда готов DOM, медиа-контент может загружаться позже
     
-    $("#add_div").css('display', 'block') // устанавливает дефолтное значение display для раздела добавления пользователя
-    $("#mac_div").css('display', 'block')
+    $("#data_div").css('display', 'block') // устанавливает дефолтное значение display для раздела добавления пользователя
 
     function getCookie(name) { //функция парсит document.cookie по аргументу (name='csrftoken') и возвращает значение токена
         var cookieValue = null;
@@ -39,20 +38,17 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         var action = $("#id_action").val();         //узнает, какое значение выбрано в action  
         if (action === "del") {                     //если выбрано "удалить"
             $("#ip_div").css('display', 'block')    //делает свойство css "display"="block" для id=ip_div 
-            $("#mac_div").css('display', 'none')
-            $("#add_div").css('display', 'none')
+            $("#data_div").css('display', 'none')
         }
 
-        else if (action === "new_mac") {
+        else if (action === "update") {    //if action = 'update'
             $("#ip_div").css('display', 'block');
-            $("#mac_div").css('display', 'block');
-            $("#add_div").css('display', 'none');
+            $("#data_div").css('display', 'block');
         }
 
-        else {      //if action = 'add'
+        else {                              //if action = 'add'
             $("#ip_div").css('display', 'none')     //делает свойство css "display"="none" для id=ip_div 
-            $("#mac_div").css('display', 'block')
-            $("#add_div").css('display', 'block')
+            $("#data_div").css('display', 'block')
         }
     });
 
@@ -76,7 +72,10 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
                 else {
                     var message = response.message
                     $('#message').text(message[0])
-                    $("#result").text(message[1]) 
+                    $("#result").empty()
+                    for (step = 0; step < message[1].length; step++){
+                        $('#result').append('<p>' + message[1][step] + '</p>')
+                    }
                 }
                 
             }
