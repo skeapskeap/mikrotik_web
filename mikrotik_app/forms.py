@@ -2,45 +2,43 @@ from django import forms
 from macaddress.fields import MACAddressFormField
 
 
-class CheckIP(forms.Form):
-    ip = forms.GenericIPAddressField(
-        label='IP address',
-        protocol='IPv4',
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
+def ip_field(required=True):
+    return forms.GenericIPAddressField(
+                label='ip ad',
+                protocol='IPv4',
+                widget=forms.TextInput(
+                    attrs={'class': 'form-control',
+                           'id': 'ip_field'}
+                ),
+                required=required
+                )
 
 
-class IPOperations(forms.Form):
-    action = forms.ChoiceField(
-        choices=(
+def choice_field(**kwargs):
+    return forms.ChoiceField(
+                choices=kwargs.get('choices'),
+                widget=forms.Select(attrs={'class': 'form-control'}))
+
+
+class HomeForm(forms.Form):
+    ip = ip_field()
+
+
+class BillForm(forms.Form):
+    action = choice_field(choices=(
                     ('check', 'Проверить статус'),
                     ('block', 'Заблокировать'),
-                    ('unblock', 'Разблокировать')
-                ),
-        widget=forms.Select(attrs={'class': 'form-control'})
-        )
-    ip = forms.GenericIPAddressField(
-        label='IP address',
-        protocol='IPv4',
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-        )
+                    ('unblock', 'Разблокировать')))
+    ip = ip_field()
 
 
-class CustOperations(forms.Form):
-    action = forms.ChoiceField(
-        choices=(
-            ('add', 'Добавить пользователя'),
-            ('del', 'Удалить пользователя'),
-            ('update', 'Изменить данные')
-            ),
-        widget=forms.Select(attrs={'class': 'form-control'}))
+class ConfigForm(forms.Form):
+    action = choice_field(choices=(
+                    ('add', 'Добавить пользователя'),
+                    ('del', 'Удалить пользователя'),
+                    ('update', 'Изменить данные')))
 
-    ip = forms.GenericIPAddressField(
-        label='IP address',
-        protocol='IPv4',
-        widget=forms.TextInput(attrs={'class': 'form-control',
-                                      'id': 'ip_field'}),
-        required=False)
+    ip = ip_field(required=False)
 
     mac = MACAddressFormField(label='MAC address',
                               widget=forms.TextInput(attrs={
@@ -58,37 +56,42 @@ class CustOperations(forms.Form):
                                 required=False)
 
     url = forms.URLField(label='Ссылка на заявку',
-                         min_length=40,
-                         max_length=60,
+                         max_length=70,
                          widget=forms.TextInput(attrs={
                                   'class': 'form-control',
                                   'id': 'url'}),
                          required=False)
-    '''
+
     def clean(self):
-        cleaned_data = super(CustOperations, self).clean()
-        if cleaned_data.get('action') == 'add':
-            return cleaned_data
-        else:
-            raise forms.ValidationError('wrong action')
-    '''
-    def clean(self):
-        cleaned_data = super(CustOperations, self).clean()
+        # Receive cleaned form data after standard validation
+        cleaned_data = super(ConfigForm, self).clean()
         action = cleaned_data.get('action')
+
+        # Add customer
         if action == 'add':
-            if self.data.get('mac') and self.data.get('firm_name') and self.data.get('url'):
+            # All DISPLAYED fields are required
+            if self.data.get('mac') \
+               and self.data.get('firm_name') \
+               and self.data.get('url'):
                 return cleaned_data
             else:
                 raise forms.ValidationError('Fill empty fields')
 
+        # Delete customer
         if action == 'del':
+            # Only IP field is required
             if self.data.get('ip'):
                 return cleaned_data
             else:
                 raise forms.ValidationError('Fill IP field')
 
+        # Change some of customer data
         if action == 'update':
-            optional = self.data.get('mac') or self.data.get('firm_name') or self.data.get('url')
+            # At least one of optional fields required
+            optional = self.data.get('mac') \
+                       or self.data.get('firm_name') \
+                       or self.data.get('url')
+            # IP is the only mandatory field in this case
             if self.data.get('ip') and optional:
                 return cleaned_data
             else:

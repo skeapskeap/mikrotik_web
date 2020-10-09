@@ -52,6 +52,27 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
+    function displayResponse(response) {
+        $("p[id*='error']").empty()   //clear all previous errors
+        if (response.error) {               // if there is validation error in form
+            $('#result').empty()
+            $('#common_error').text(response.error["__all__"])
+            $('#mac_error').text(response.error["mac"])
+            $('#ip_error').text(response.error["ip"])
+            $('#url_error').text(response.error["url"])
+        }
+
+        else {
+            var message = response.message
+            $('#message').text(message[0])
+            $("#result").empty()
+            $("#result").append('<p><b>Executed commands:</b></p>')
+            for (step = 0; step < message[1].length; step++){
+                $('#result').append('<p>&nbsp;&nbsp;&nbsp;' + message[1][step] + '</p>')
+            }
+        }
+    }
+
     // Submit post on submit
     $('form').on('submit', function(event) {
         event.preventDefault()
@@ -59,29 +80,8 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
             url: '',
             type: 'post',
             data: $(this).serializeArray(),
-            success: function(response) {
-                $("p[id*='error']").empty()   //clear all previous errors
-                if (response.error) {               // if there is validation error in form
-                    $('#result').empty()
-                    $('#common_error').text(response.error["__all__"])
-                    $('#mac_error').text(response.error["mac"])
-                    $('#ip_error').text(response.error["ip"])
-                    $('#url_error').text(response.error["url"])
-                }
-
-                else {
-                    var message = response.message
-                    $('#message').text(message[0])
-                    $("#result").empty()
-                    for (step = 0; step < message[1].length; step++){
-                        $('#result').append('<p>' + message[1][step] + '</p>')
-                    }
-                }
-                
-            }
+            success: displayResponse
         });
-        
-        
     });
 
 });

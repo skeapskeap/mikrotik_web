@@ -39,7 +39,7 @@ def unique_mac(func):
         dhcp_overlap = mikrotik().query(dhcp_print).equal(**options)
 
         if arp_overlap or dhcp_overlap:
-            return {'message': ['Такой MAC уже существует']}
+            return {'message': ['Такой MAC уже существует', ['Увы :E']]}
         else:
             return func(**kwargs)
     return wrapper
@@ -68,5 +68,5 @@ def proper_mac(func):
             kwargs['mac'] = mac
             return func(**kwargs)
 
-        return {'message': ['Неправильный  MAC']}
+        return {'message': ['Неправильный  MAC', ['Сожалею :(']]}
     return wrapper

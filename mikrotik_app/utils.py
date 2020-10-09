@@ -1,7 +1,10 @@
+import logging
 import paramiko
 from .config import LOGIN, PASSWORD, IP, connect_args
 from routeros import login
 from datetime import datetime as dt
+
+logging.basicConfig(filename='log', level=logging.INFO)
 
 
 def mikrotik():
@@ -39,12 +42,12 @@ def find_free_ip() -> str:
     return free_ip.pop()
 
 
-def parse_post(post_obj):
-    data = dict(post_obj)
-    del data['csrfmiddlewaretoken']
-    return data
-
-
 def time_now():
     time = dt.now().strftime('%c')
     return time
+
+
+def write_log(request):
+    data = dict(request.POST)
+    del data['csrfmiddlewaretoken']
+    logging.info(f"{time_now()}; User {request.user} POSTed: {data}")

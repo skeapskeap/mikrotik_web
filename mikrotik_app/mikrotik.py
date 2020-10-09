@@ -171,9 +171,11 @@ def block_ip(ip, block=True):
 def update_data(**kwargs):
     ip, mac, firm_name, url = kwargs.values()
     commands = []
+    # commands if new MAC occured 
     if mac:
         commands.extend([f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
                          f'ip arp set  [find where address={ip}] mac-address={mac}'])
+    # commands to update comment
     if firm_name or url:
         firm_name = translit(firm_name, 'ru', reversed=True)
         comment = f'"{time_now()}; {firm_name}; {url}"'

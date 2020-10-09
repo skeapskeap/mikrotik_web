@@ -32,6 +32,48 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         }
     });
 
+    function displayResponse(response) {
+        if (response.error) {               // if there is validation error in form
+            $('#check_result').empty()
+            $('#error').text(response.error)
+        }
+
+        else {                              // if validation passed
+            $('#error').empty()
+            var pathname = window.location.pathname; // Returns path only (/path/example.html)
+            var arp = response.arp
+            var dhcp = response.dhcp
+            var acl = response.acl
+            var message = response.message
+            
+            if (pathname === '/') {
+                $('#check_result').text(message)  // Returns message in case of home page rendered
+            }
+
+            else {                                // All other cases
+                $("#result").empty()
+                $('#message').text(message)
+                
+                $("#result").append('<p><b>ARP records:</b></p>')
+                for (step = 0; step < arp.length; step++){
+                    $('#result').append('<pre>  ' + arp[step] + '</pre>')
+                }
+
+                $("#result").append('<p><b>DHCP records:</b></p>')
+                for (step = 0; step < dhcp.length; step++){
+                    $('#result').append('<pre>  ' + dhcp[step] + '</pre>')
+                }
+
+                $("#result").append('<p><b>ACL records</b></p>')
+                for (step = 0; step < acl.length; step++){
+                    $('#result').append('<pre>  ' + acl[step] + '</pre>')
+                }
+            }
+
+        }
+        
+    } //close function
+
     // Submit post on submit
     $('form').on('submit', function(event) {
         event.preventDefault()
@@ -39,46 +81,8 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
             url: '',
             type: 'post',
             data: $(this).serializeArray(),
-            success: function(response) {
-                if (response.error) {               // if there is validation error in form
-                    $('#check_result').empty()
-                    $('#error').text(response.error)
-                }
-
-                else {                              // if validation passed
-                    $('#error').empty()
-                    var pathname = window.location.pathname; // Returns path only (/path/example.html)
-                    var arp = response.arp
-                    var dhcp = response.dhcp
-                    var acl = response.acl
-                    var message = response.message
-                    
-                    if (pathname === '/') {
-                        $('#check_result').text(message)  // Returns message in case of home page rendered
-                    }
-
-                    else {                                // All other cases
-                        $("#result").empty()
-                        $('#message').text(message)
-                        for (step = 0; step < arp.length; step++){
-                            $('#result').append('<p>' + arp[step] + '</p>')
-                        }
-                        
-                        for (step = 0; step < dhcp.length; step++){
-                            $('#result').append('<p>' + dhcp[step] + '</p>')
-                        }
-                        
-                        for (step = 0; step < acl.length; step++){
-                            $('#result').append('<p>' + acl[step] + '</p>')
-                        }
-                    }
-
-                }
-                
-            } //close success block
-
+            success: displayResponse
         }); //close ajax block
-        
         
     }); //close form submit block
 
