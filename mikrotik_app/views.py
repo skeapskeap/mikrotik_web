@@ -1,15 +1,14 @@
 from .decorators import is_authenticated, allow_access
-from datetime import datetime as dt
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.generic import View
 from .forms import CheckIP, CustOperations, IPOperations
 from .mikrotik import run_action
 from .utils import parse_post
+from .utils import time_now as time
 import logging
 
 logging.basicConfig(filename='log', level=logging.INFO)
-date = dt.now().strftime('%c')
 
 
 def index(request):
@@ -35,7 +34,7 @@ class Home(View):
         form = CheckIP(request.POST or None)
         if form.is_valid():
             ip = request.POST.get('ip')
-            logging.info(f"{date}; User {request.user} POSTed: check IP {parse_post(request.POST).get('ip')}")
+            logging.info(f"{time()}; User {request.user} POSTed: check IP {parse_post(request.POST).get('ip')}")
             reply = run_action(action='check', ip=ip)
         else:
             '''
@@ -61,7 +60,7 @@ class Bill(View):
         if form.is_valid():
             action = request.POST.get('action')
             ip = request.POST.get('ip')
-            logging.info(f"{date}; User {request.user} POSTed: {parse_post(request.POST)}")
+            logging.info(f"{time()}; User {request.user} POSTed: {parse_post(request.POST)}")
             reply = run_action(action=action, ip=ip)
         else:
             error = dict(form.errors.items()).get('ip')
@@ -85,7 +84,7 @@ class Config(View):
             mac = request.POST.get('mac')
             firm_name = request.POST.get('firm_name')
             url = request.POST.get('url')
-            logging.info(f"{date}; User {request.user} POSTed: {parse_post(request.POST)}")
+            logging.info(f"{time()}; User {request.user} POSTed: {parse_post(request.POST)}")
             reply = run_action(action=action, ip=ip, mac=mac, firm_name=firm_name, url=url)
         else:
             for _ in form.errors.items():
