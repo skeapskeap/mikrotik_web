@@ -1,5 +1,4 @@
 from django import forms
-from macaddress.fields import MACAddressFormField
 from .utils import proper_mac
 
 
