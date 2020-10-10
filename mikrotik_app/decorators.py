@@ -44,29 +44,3 @@ def unique_mac(func):
             return func(**kwargs)
     return wrapper
 
-
-def proper_mac(func):
-    '''
-    take string from input
-    try to parse it to mac address
-    return mac if success or False if not
-    '''
-    def wrapper(**kwargs):
-        mac = kwargs.get('mac')
-        if not mac:
-            return func(**kwargs)
-        separators = (' ', ':', '-', '.')
-        permitted_chars = set('0123456789abcdef')
-
-        for separator in separators:
-            mac = mac.replace(separator, '')
-        mac = mac.lower()
-
-        if len(mac) == 12 and set(mac) <= permitted_chars:
-            mac = mac.upper()
-            mac = ':'.join([ mac[:2], mac[2:4], mac[4:6], mac[6:8], mac[8:10], mac[10:12] ])
-            kwargs['mac'] = mac
-            return func(**kwargs)
-
-        return {'message': ['Неправильный  MAC', ['Сожалею :(']]}
-    return wrapper

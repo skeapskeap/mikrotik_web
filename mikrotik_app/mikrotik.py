@@ -1,5 +1,5 @@
 # https://pypi.org/project/routeros/#description
-from .decorators import proper_mac, unique_mac
+from .decorators import unique_mac
 from .utils import find_free_ip, mikrotik, send_commands, time_now
 from time import sleep
 from transliterate import translit
@@ -166,7 +166,6 @@ def block_ip(ip, block=True):
     return check(ip)
 
 
-@proper_mac
 @unique_mac
 def update_data(**kwargs):
     ip, mac, firm_name, url = kwargs.values()
@@ -188,7 +187,6 @@ def update_data(**kwargs):
     return result
 
 
-@proper_mac
 @unique_mac
 def add_ip(**kwargs):
     mac, firm_name, url = kwargs.values()

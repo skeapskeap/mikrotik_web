@@ -1,5 +1,6 @@
 from django import forms
 from macaddress.fields import MACAddressFormField
+from .utils import proper_mac
 
 
 def ip_field(required=True):
@@ -40,12 +41,12 @@ class ConfigForm(forms.Form):
 
     ip = ip_field(required=False)
 
-    mac = MACAddressFormField(label='MAC address',
-                              widget=forms.TextInput(attrs={
+    mac = forms.CharField(label='MAC address',
+                          widget=forms.TextInput(attrs={
                                   'class': 'form-control',
                                   'id': 'input_mac'
                                   }),
-                              required=False)
+                          required=False)
 
     firm_name = forms.CharField(label='Название компании',
                                 max_length=50,
@@ -61,6 +62,15 @@ class ConfigForm(forms.Form):
                                   'class': 'form-control',
                                   'id': 'url'}),
                          required=False)
+
+    def clean_mac(self):
+        mac = self.cleaned_data.get('mac')
+        if proper_mac(mac):
+            self.cleaned_data['mac'] = proper_mac(mac)
+            print(self.cleaned_data['mac'])
+            return self.cleaned_data['mac']
+        else:
+            raise forms.ValidationError('Enter valid MAC Address')
 
     def clean(self):
         # Receive cleaned form data after standard validation

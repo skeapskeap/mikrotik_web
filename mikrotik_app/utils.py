@@ -23,6 +23,27 @@ def send_commands(commands: list):
         client.exec_command(command)
 
 
+def proper_mac(mac):
+    '''
+    take a string from input
+    try to parse it to mac address
+    return mac if success or False if not
+    '''
+    mac = mac.strip().lower()
+    separators = (' ', ':', '-', '.')
+    permitted_chars = set('0123456789abcdef')
+
+    for separator in separators:
+        mac = mac.replace(separator, '')
+
+    if len(mac) == 12 and set(mac) <= permitted_chars:
+        mac = mac.upper()
+        mac = ':'.join([ mac[:2], mac[2:4], mac[4:6], mac[6:8], mac[8:10], mac[10:12] ])
+        return mac
+    else:
+        return False
+
+
 def find_free_ip() -> str:
     arp_records = mikrotik().query('/ip/arp/print').equal(
         interface='vlan_123',
@@ -51,3 +72,7 @@ def write_log(request):
     data = dict(request.POST)
     del data['csrfmiddlewaretoken']
     logging.info(f"{time_now()}; User {request.user} POSTed: {data}")
+
+
+if __name__ == '__main__':
+    print(find_free_ip())

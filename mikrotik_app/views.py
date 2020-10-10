@@ -77,7 +77,7 @@ class Config(View):
         if form.is_valid():
             action      = request.POST.get('action')
             ip          = request.POST.get('ip')
-            mac         = request.POST.get('mac')
+            mac         = form.cleaned_data.get('mac')  # in clean method mac converts to a proper mikrotik form
             firm_name   = request.POST.get('firm_name')
             url         = request.POST.get('url')
             write_log(request)
