@@ -1,24 +1,25 @@
 import logging
 import paramiko
-from .config import LOGIN, PASSWORD, IP, connect_args
+from .config import SSH_KWARGS, ROS_API_ARGS, SUBNET_1, SUBNET_2
 from routeros import login
+from routeros.exc import ConnectionError, FatalError
 from datetime import datetime as dt
 
 logging.basicConfig(filename='log', level=logging.INFO)
 
 
 def mikrotik():
-    return login(*connect_args)
+    try:
+        return login(*ROS_API_ARGS)
+    except (ConnectionError, ConnectionRefusedError, FatalError):
+        print('mikrotik fail')
+        return False
 
 
 def send_commands(commands: list):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(hostname=IP,
-                   username=LOGIN,
-                   password=PASSWORD,
-                   look_for_keys=False,
-                   allow_agent=False)
+    client.connect(**SSH_KWARGS)
     for command in commands:
         client.exec_command(command)
 
@@ -55,9 +56,9 @@ def find_free_ip() -> str:
     for record in arp_records:
         used_ip.add(record.get('address'))
     for host in range(2, 256):
-        ip_pool.add(f'193.238.176.{host}')
+        ip_pool.add(f'{SUBNET_1}{host}')
     for host in range(1, 255):
-        ip_pool.add(f'193.238.177.{host}')
+        ip_pool.add(f'{SUBNET_2}{host}')
 
     free_ip = ip_pool - used_ip
     return free_ip.pop()
@@ -72,7 +73,3 @@ def write_log(request):
     data = dict(request.POST)
     del data['csrfmiddlewaretoken']
     logging.info(f"{time_now()}; User {request.user} POSTed: {data}")
-
-
-if __name__ == '__main__':
-    print(find_free_ip())

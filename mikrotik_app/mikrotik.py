@@ -1,6 +1,8 @@
 # https://pypi.org/project/routeros/#description
 from .decorators import unique_mac
 from .utils import find_free_ip, mikrotik, send_commands, time_now
+from paramiko.ssh_exception import AuthenticationException
+from routeros.exc import FatalError
 from time import sleep
 from transliterate import translit
 
@@ -9,17 +11,22 @@ class AboutIP:
 
     def __init__(self, ip):
         self.ip = ip
-        self.arp = self.query('/ip/arp/print')
-        self.dhcp = self.query('/ip/dhcp-server/lease/print')
-        self.acl = self.query('/ip/firewall/address-list/print')
+        try:
+            self.arp = self.query('/ip/arp/print')
+            self.dhcp = self.query('/ip/dhcp-server/lease/print')
+            self.acl = self.query('/ip/firewall/address-list/print')
+        except FatalError:
+            self.arp, self.dhcp, self.acl = False, False, False
 
     def __repr__(self):
         return f'<AboutIP: {self.ip}>'
 
     def query(self, query) -> tuple:
-        reply = mikrotik().query(query).equal(address=self.ip, dynamic='false')
-        if not reply:
-            return False
+        if mikrotik():
+            reply = mikrotik().query(query).equal(address=self.ip, dynamic='false')
+        else:
+            reply = False
+        print(reply)
         return reply
 
     def multiple_records(self) -> bool:
@@ -170,7 +177,7 @@ def block_ip(ip, block=True):
 def update_data(**kwargs):
     ip, mac, firm_name, url = kwargs.values()
     commands = []
-    # commands if new MAC occured 
+    # commands if new MAC occured
     if mac:
         commands.extend([f'ip dhcp-server lease set [find where address={ip}] mac-address={mac}',
                          f'ip arp set  [find where address={ip}] mac-address={mac}'])
@@ -190,16 +197,18 @@ def update_data(**kwargs):
 @unique_mac
 def add_ip(**kwargs):
     mac, firm_name, url = kwargs.values()
+    try:
+        ip = find_free_ip()
+        firm_name = translit(firm_name, 'ru', reversed=True)
+        comment = f'"{time_now()}; {firm_name}; {url}"'
+        commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
+                    f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
+                    f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
 
-    ip = find_free_ip()
-    firm_name = translit(firm_name, 'ru', reversed=True)
-    comment = f'"{time_now()}; {firm_name}; {url}"'
-    commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
-                f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
-                f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
-
-    send_commands(commands)
-    result = {'message': [f'Добавлен IP: {ip}', commands]}
+        send_commands(commands)
+        result = {'message': [f'Добавлен IP: {ip}', commands]}
+    except ValueError:
+        result = {'message': ['Request timed out', 'Try again']}
     return result
 
 
