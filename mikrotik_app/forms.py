@@ -64,9 +64,12 @@ class ConfigForm(forms.Form):
 
     def clean_mac(self):
         mac = self.cleaned_data.get('mac')
+        # Обработку пустого поля оставляем на совесть общей проверки формы
+        if not mac:
+            return mac
+
         if proper_mac(mac):
             self.cleaned_data['mac'] = proper_mac(mac)
-            print(self.cleaned_data['mac'])
             return self.cleaned_data['mac']
         else:
             raise forms.ValidationError('Enter valid MAC Address')

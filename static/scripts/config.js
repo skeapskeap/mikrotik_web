@@ -39,22 +39,25 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
         if (action === "del") {                     //если выбрано "удалить"
             $("#ip_div").css('display', 'block')    //делает свойство css "display"="block" для id=ip_div 
             $("#data_div").css('display', 'none')
+            $(':input','#main_form').not('#id_action').val('')    //очищает все заполненные поля формы кроме action
         }
 
         else if (action === "update") {    //if action = 'update'
             $("#ip_div").css('display', 'block');
             $("#data_div").css('display', 'block');
+            $(':input','#main_form').not('#id_action').val('')    //очищает все заполненные поля формы кроме action
         }
 
         else {                              //if action = 'add'
             $("#ip_div").css('display', 'none')     //делает свойство css "display"="none" для id=ip_div 
             $("#data_div").css('display', 'block')
+            $(':input','#main_form').not('#id_action').val('')    //очищает все заполненные поля формы кроме action
         }
     });
 
     function displayResponse(response) {
         $("p[id*='error']").empty()   //clear all previous errors
-        if (response.error) {               // if there is validation error in form
+        if (response.error) {         // if there is validation error in form
             $('#result').empty()
             $('#message').empty()
             $('#common_error').text(response.error["__all__"])
@@ -65,7 +68,8 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
 
         else {
             var message = response.message
-            $("#result").empty()
+            $("#result").empty()                                  //очищает предыдущий вывод
+            $(':input','#main_form').not('#id_action').val('')    //очищает все заполненные поля формы кроме action
             $('#message').text(message[0])
             $("#result").append('<p><b>Executed commands:</b></p>')
             for (step = 0; step < message[1].length; step++){

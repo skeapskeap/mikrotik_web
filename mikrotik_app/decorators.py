@@ -43,4 +43,3 @@ def unique_mac(func):
         else:
             return func(**kwargs)
     return wrapper
-

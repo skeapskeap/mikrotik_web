@@ -12,7 +12,7 @@ def mikrotik():
     try:
         return login(*ROS_API_ARGS)
     except (ConnectionError, ConnectionRefusedError, FatalError):
-        print('mikrotik fail')
+        logging.info(f"{time_now()}; ROS_API Connection fail")
         return False
 
 
@@ -48,8 +48,8 @@ def proper_mac(mac):
 def find_free_ip() -> str:
     arp_records = mikrotik().query('/ip/arp/print').equal(
         interface='vlan_123',
-        dynamic='false'
-        )
+        dynamic='false')
+
     used_ip = set()
     ip_pool = set()
 
@@ -60,8 +60,18 @@ def find_free_ip() -> str:
     for host in range(1, 255):
         ip_pool.add(f'{SUBNET_2}{host}')
 
-    free_ip = ip_pool - used_ip
-    return free_ip.pop()
+    # Из разности множеств выбирается рандомный IP
+    free_ip_pool = ip_pool - used_ip
+
+    while True:
+        free_ip = free_ip_pool.pop()
+        print(f'free_ip_pool {free_ip_pool}')
+        print(f'free_ip {free_ip}')
+        # Проверка, что свободный IP не фигурирует в dhcl-list и acl
+        dhcp_used = mikrotik().query('/ip/dhcp-server/lease/print').equal(address=free_ip, dynamic='false')
+        acl_used = mikrotik().query('/ip/firewall/address-list/print').equal(address=free_ip, dynamic='false')
+        if not (dhcp_used or acl_used):
+            return free_ip
 
 
 def time_now():
@@ -73,3 +83,7 @@ def write_log(request):
     data = dict(request.POST)
     del data['csrfmiddlewaretoken']
     logging.info(f"{time_now()}; User {request.user} POSTed: {data}")
+
+
+if __name__ == '__main__':
+    print(find_free_ip())

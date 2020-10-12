@@ -53,6 +53,7 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
             else {                                // All other cases
                 $("#result").empty()
                 $('#message').text(message)
+                $(':input','#main_form').not('#id_action').val('')    //очищает все заполненные поля формы кроме action
                 
                 $("#result").append('<p><b>ARP records:</b></p>')
                 for (step = 0; step < arp.length; step++){

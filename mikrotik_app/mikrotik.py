@@ -1,7 +1,6 @@
 # https://pypi.org/project/routeros/#description
 from .decorators import unique_mac
 from .utils import find_free_ip, mikrotik, send_commands, time_now
-from paramiko.ssh_exception import AuthenticationException
 from routeros.exc import FatalError
 from time import sleep
 from transliterate import translit
@@ -26,7 +25,6 @@ class AboutIP:
             reply = mikrotik().query(query).equal(address=self.ip, dynamic='false')
         else:
             reply = False
-        print(reply)
         return reply
 
     def multiple_records(self) -> bool:
@@ -115,7 +113,6 @@ def run_action(**kwargs):
     mac         = kwargs.get('mac')
     firm_name   = kwargs.get('firm_name')
     url         = kwargs.get('url')
-
     if action == 'check':
         return check(ip)
     if action == 'block':
