@@ -21,10 +21,12 @@ class AboutIP:
         return f'<AboutIP: {self.ip}>'
 
     def query(self, query) -> tuple:
-        if mikrotik():
+        try:
             reply = mikrotik().query(query).equal(address=self.ip, dynamic='false')
-        else:
-            reply = False
+        # API микротика не переваривает reply, содержащий non-ascii символы =\
+        # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
+        except ValueError:
+            reply = ()
         return reply
 
     def multiple_records(self) -> bool:
@@ -194,8 +196,8 @@ def update_data(**kwargs):
 @unique_mac
 def add_ip(**kwargs):
     mac, firm_name, url = kwargs.values()
-    try:
-        ip = find_free_ip()
+    ip = find_free_ip()
+    if ip:
         firm_name = translit(firm_name, 'ru', reversed=True)
         comment = f'"{time_now()}; {firm_name}; {url}"'
         commands = [f'ip arp add address={ip} interface=vlan_123 mac-address={mac} comment={comment}',
@@ -204,8 +206,8 @@ def add_ip(**kwargs):
 
         send_commands(commands)
         result = {'message': [f'Добавлен IP: {ip}', commands]}
-    except ValueError:
-        result = {'message': ['Request timed out', 'Try again']}
+    else:
+        result = {'message': ['Cant find free IP', 'Sorry :E']}
     return result
 
 

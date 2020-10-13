@@ -46,9 +46,13 @@ def proper_mac(mac):
 
 
 def find_free_ip() -> str:
-    arp_records = mikrotik().query('/ip/arp/print').equal(
-        interface='vlan_123',
-        dynamic='false')
+    try:
+        arp_records = mikrotik().query('/ip/arp/print').equal(
+            interface='vlan_123',
+            dynamic='false')
+    except ValueError:                                          # API микротика не переваривает reply, содержащий non-ascii символы =\
+        logging.info(f"{time_now()}; Invalid ARP reply about")  # В некоторых хостах такие символы есть, например поле Comment
+        return None
 
     used_ip = set()
     ip_pool = set()
@@ -60,18 +64,24 @@ def find_free_ip() -> str:
     for host in range(1, 255):
         ip_pool.add(f'{SUBNET_2}{host}')
 
-    # Из разности множеств выбирается рандомный IP
     free_ip_pool = ip_pool - used_ip
 
-    while True:
+    while free_ip_pool:
+        # Из разности множеств выбирается рандомный IP
         free_ip = free_ip_pool.pop()
         print(f'free_ip_pool {free_ip_pool}')
         print(f'free_ip {free_ip}')
         # Проверка, что свободный IP не фигурирует в dhcl-list и acl
-        dhcp_used = mikrotik().query('/ip/dhcp-server/lease/print').equal(address=free_ip, dynamic='false')
-        acl_used = mikrotik().query('/ip/firewall/address-list/print').equal(address=free_ip, dynamic='false')
-        if not (dhcp_used or acl_used):
-            return free_ip
+        try:
+            dhcp_used = mikrotik().query('/ip/dhcp-server/lease/print').equal(address=free_ip, dynamic='false')
+            acl_used = mikrotik().query('/ip/firewall/address-list/print').equal(address=free_ip, dynamic='false')
+            if not (dhcp_used or acl_used):
+                return free_ip
+        except ValueError:                                                  # API микротика не переваривает reply, содержащий non-ascii символы =\
+            logging.info(f"{time_now()}; Invalid reply about {free_ip}")    # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
+            continue
+
+    return None
 
 
 def time_now():
