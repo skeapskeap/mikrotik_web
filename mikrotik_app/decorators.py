@@ -11,6 +11,15 @@ def is_authenticated(view):
     return wrapper
 
 
+def not_authenticated(func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('/')
+        else:
+            return func(request, *args, **kwargs)
+    return wrapper
+
+
 def allow_access(allowed_groups={}):
     def decorator(view):
 

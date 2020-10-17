@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth.views import LoginView
 from django.urls import path, include
 from register import views as reg_view
 
@@ -22,6 +23,7 @@ admin.autodiscover()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', reg_view.register, name='register'),
-    path('login/', include('django.contrib.auth.urls')),  # includes patterns /login /logout etc.
+    path('login/', LoginView.as_view(redirect_authenticated_user=True)),
+    path('', include('django.contrib.auth.urls')),  # includes patterns /login /logout etc.
     path('', include('mikrotik_app.urls')),
 ]

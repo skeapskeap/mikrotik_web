@@ -1,8 +1,9 @@
 from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect
+from mikrotik_app.decorators import not_authenticated
 from .forms import RegisterForm
 
-
+@not_authenticated
 def register(response):
     if response.method == 'POST':
         form = RegisterForm(response.POST)
