@@ -25,6 +25,7 @@ class AboutIP:
             reply = mikrotik().query(query).equal(address=self.ip, dynamic='false')
         # API микротика не переваривает reply, содержащий non-ascii символы =\
         # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
+        # Или в поле Comment
         except ValueError:
             reply = ()
         return reply

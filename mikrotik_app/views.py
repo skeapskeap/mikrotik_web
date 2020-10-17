@@ -7,13 +7,6 @@ from .mikrotik import run_action
 from .utils import write_log
 
 
-def index(request):
-    if request.user.is_authenticated:
-        return render(request, 'index.html')
-    else:
-        return redirect('/login')
-
-
 def deny_access(request):
     return render(request, 'restricted.html')
 
@@ -55,7 +48,7 @@ class Bill(View):
         form = BillForm(request.POST or None)
         if form.is_valid():
             action  = request.POST.get('action')
-            ip      = request.POST.get('ip')
+            ip      = request.POST.get('ip').strip()
             write_log(request)
             reply = run_action(action=action, ip=ip)
         else:
@@ -76,7 +69,7 @@ class Config(View):
         form = ConfigForm(request.POST or None)
         if form.is_valid():
             action      = request.POST.get('action')
-            ip          = request.POST.get('ip')
+            ip          = request.POST.get('ip').strip()
             mac         = form.cleaned_data.get('mac')  # in clean method mac converts to a proper mikrotik form
             firm_name   = request.POST.get('firm_name')
             url         = request.POST.get('url')

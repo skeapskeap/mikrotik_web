@@ -69,8 +69,6 @@ def find_free_ip() -> str:
     while free_ip_pool:
         # Из разности множеств выбирается рандомный IP
         free_ip = free_ip_pool.pop()
-        print(f'free_ip_pool {free_ip_pool}')
-        print(f'free_ip {free_ip}')
         # Проверка, что свободный IP не фигурирует в dhcl-list и acl
         try:
             dhcp_used = mikrotik().query('/ip/dhcp-server/lease/print').equal(address=free_ip, dynamic='false')

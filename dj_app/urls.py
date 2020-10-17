@@ -22,6 +22,6 @@ admin.autodiscover()
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('register/', reg_view.register, name='register'),
-    path('', include('django.contrib.auth.urls')),
+    path('login/', include('django.contrib.auth.urls')),  # includes patterns /login /logout etc.
     path('', include('mikrotik_app.urls')),
 ]
