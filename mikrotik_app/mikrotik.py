@@ -1,7 +1,7 @@
 # https://pypi.org/project/routeros/#description
 from .decorators import unique_mac
 from .utils import find_free_ip, mikrotik, send_commands, time_now
-from routeros.exc import FatalError
+from routeros.exc import ConnectionError, FatalError
 from time import sleep
 from transliterate import translit
 
@@ -14,7 +14,7 @@ class AboutIP:
             self.arp = self.query('/ip/arp/print')
             self.dhcp = self.query('/ip/dhcp-server/lease/print')
             self.acl = self.query('/ip/firewall/address-list/print')
-        except FatalError:
+        except (AttributeError, ConnectionError, ConnectionRefusedError, FatalError):
             self.arp, self.dhcp, self.acl = False, False, False
 
     def __repr__(self):

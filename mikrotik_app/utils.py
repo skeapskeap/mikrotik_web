@@ -1,27 +1,30 @@
 import logging
 import paramiko
 from .config import SSH_KWARGS, ROS_API_ARGS, SUBNET_1, SUBNET_2
+from datetime import datetime as dt
+from logging import handlers
 from routeros import login
 from routeros.exc import ConnectionError, FatalError
-from datetime import datetime as dt
 
-logging.basicConfig(filename='log', level=logging.INFO)
+handler = handlers.RotatingFileHandler(filename='log', maxBytes=512_000, backupCount=5)
+logging.basicConfig(level=logging.INFO, handlers=[handler])
+logger = logging.getLogger()
 
 
 def mikrotik():
     try:
         return login(*ROS_API_ARGS)
     except (ConnectionError, ConnectionRefusedError, FatalError):
-        logging.info(f"{time_now()}; ROS_API Connection fail")
+        logger.info(f"{time_now()}; ROS_API Connection fail")
         return False
 
 
 def send_commands(commands: list):
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(**SSH_KWARGS)
-    for command in commands:
-        client.exec_command(command)
+    with paramiko.SSHClient() as ssh:
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(**SSH_KWARGS)
+        for command in commands:
+            ssh.exec_command(command)
 
 
 def proper_mac(mac):
@@ -51,7 +54,7 @@ def find_free_ip() -> str:
             interface='vlan_123',
             dynamic='false')
     except ValueError:                                          # API микротика не переваривает reply, содержащий non-ascii символы =\
-        logging.info(f"{time_now()}; Invalid ARP reply about")  # В некоторых хостах такие символы есть, например поле Comment
+        logger.info(f"{time_now()}; Invalid ARP reply about")  # В некоторых хостах такие символы есть, например поле Comment
         return None
 
     used_ip = set()
@@ -75,8 +78,8 @@ def find_free_ip() -> str:
             acl_used = mikrotik().query('/ip/firewall/address-list/print').equal(address=free_ip, dynamic='false')
             if not (dhcp_used or acl_used):
                 return free_ip
-        except ValueError:                                                  # API микротика не переваривает reply, содержащий non-ascii символы =\
-            logging.info(f"{time_now()}; Invalid reply about {free_ip}")    # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
+        except ValueError:                                                 # API микротика не переваривает reply, содержащий non-ascii символы =\
+            logger.info(f"{time_now()}; Invalid reply about {free_ip}")    # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
             continue
 
     return None
@@ -90,7 +93,7 @@ def time_now():
 def write_log(request):
     data = dict(request.POST)
     del data['csrfmiddlewaretoken']
-    logging.info(f"{time_now()}; User {request.user} POSTed: {data}")
+    logger.info(f"{time_now()}; User {request.user} POSTed: {data}")
 
 
 if __name__ == '__main__':
