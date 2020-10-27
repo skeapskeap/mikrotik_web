@@ -33,13 +33,23 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
     });
 
     function displayResponse(response) {
-        if (response.error) {               // if there is validation error in form
+        if (response.form_error) {               // if there is validation error in form
+            $('#check_result').empty()           // это поле с результатом на страничке home
+            $('#message').empty()                // это поле <h3>
+            $('#result').empty()                 // это поле с результатом на страничке bill
+            $('#form_error').text(response.form_error)
+        }
+
+        else if (response.error) {               // if there's some backend error
+            $('#form_error').empty()
             $('#check_result').empty()
-            $('#error').text(response.error)
+            $('#result').empty()
+            $('#message').text(response.error)
         }
 
         else {                              // if validation passed
-            $('#error').empty()
+            $('#message').empty()
+            $('#form_error').empty()
             var pathname = window.location.pathname; // Returns path only (/path/example.html)
             var arp = response.arp
             var dhcp = response.dhcp

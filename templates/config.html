@@ -13,14 +13,14 @@
           <label for="id_action">Action:</label>
           {{ form.action }}
       </p>
-      <p id=common_error style="color:red"></p>
+      <p id="form_error" style="color:red"></p>
 
       <div id="ip_div" class="form_hidden_field">
         <p>
           <label for="ip_field">IP address:</label>
           {{ form.ip }}
         </p>
-        <p id=ip_error style="color:red"></p>
+        <p id="ip_error" style="color:red"></p>
       </div>
 
       <div id="data_div" class="form_hidden_field">
@@ -28,7 +28,7 @@
           <label for="input_mac">MAC address:</label>
           {{ form.mac }}
         </p>
-        <p id=mac_error style="color:red"></p>
+        <p id="mac_error" style="color:red"></p>
 
         <p>
           <label for="firm_name">Название компании:</label>
@@ -39,7 +39,7 @@
           <label for="url">Ссылка на заявку:</label>
           {{ form.url }}
         </p>
-        <p id=url_error style="color:red"></p>
+        <p id="url_error" style="color:red"></p>
       </div>
 
         <button class="form-control" type="submit" value="execute" name="execute">Выполнить</button>

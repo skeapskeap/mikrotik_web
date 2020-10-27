@@ -26,10 +26,13 @@ def allow_access(allowed_groups={}):
         def wrapper(self, request, *args, **kwargs):
             user_groups = set()
             if request.user.groups.exists():
-                group_count = request.user.groups.all().count()                                 # Помещает все группы, к которым
-                user_groups = {request.user.groups.all()[i].name for i in range(group_count)}   # принадлежит юзер в сет
+                # Помещает все группы, к которым принадлежит юзер, в сет
+                user_groups = request.user.groups.all()
+                group_count = range(user_groups.count())
+                user_group_names = {user_groups[i].name for i in group_count}
 
-            if user_groups & allowed_groups:  # Если юзер входит хотя бы в одну из разрешенных групп
+            # Если юзер входит хотя бы в одну из разрешенных групп
+            if user_group_names & allowed_groups:
                 return view(self, request, *args, **kwargs)
             else:
                 return redirect('/restricted')
@@ -43,6 +46,9 @@ def unique_mac(func):
         arp_print = '/ip/arp/print'
         dhcp_print = '/ip/dhcp-server/lease/print'
         options = {'mac-address': kwargs.get('mac'), 'dynamic': 'false'}
+
+        if not mikrotik():
+            return {'error': "ROS_API Connection fail"}
 
         arp_overlap = mikrotik().query(arp_print).equal(**options)
         dhcp_overlap = mikrotik().query(dhcp_print).equal(**options)

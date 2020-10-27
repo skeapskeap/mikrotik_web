@@ -1,5 +1,5 @@
 from .decorators import is_authenticated, allow_access
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import View
 from .forms import BillForm, ConfigForm, HomeForm
@@ -32,7 +32,8 @@ class Home(View):
                 errors = [dict(form.errors.items()).get(key) for key in keys]
             '''
             error = dict(form.errors.items()).get('ip')
-            reply = {'error': error}
+            reply = {'form_error': error}
+            print(reply)
         return JsonResponse(reply, status=200)
 
 
@@ -53,7 +54,7 @@ class Bill(View):
             reply = run_action(action=action, ip=ip)
         else:
             error = dict(form.errors.items()).get('ip')
-            reply = {'error': error}
+            reply = {'form_error': error}
         return JsonResponse(reply, status=200)
 
 
@@ -68,14 +69,17 @@ class Config(View):
     def post(self, request):
         form = ConfigForm(request.POST or None)
         if form.is_valid():
-            action      = request.POST.get('action')
-            ip          = request.POST.get('ip').strip()
-            mac         = form.cleaned_data.get('mac')  # in clean method mac converts to a proper mikrotik form
-            firm_name   = request.POST.get('firm_name')
-            url         = request.POST.get('url')
+            action = request.POST.get('action')
+            ip = request.POST.get('ip').strip()
+            # in clean method MAC converts to a proper mikrotik form
+            mac = form.cleaned_data.get('mac')
+            firm_name = request.POST.get('firm_name')
+            url = request.POST.get('url')
             write_log(request)
-            reply = run_action(action=action, ip=ip, mac=mac, firm_name=firm_name, url=url)
+            reply = run_action(
+                action=action, ip=ip, mac=mac, firm_name=firm_name, url=url
+                )
         else:
             error = dict(form.errors.items())
-            reply = {'error': error}
+            reply = {'form_error': error}
         return JsonResponse(reply, status=200)

@@ -14,8 +14,11 @@ class AboutIP:
             self.arp = self.query('/ip/arp/print')
             self.dhcp = self.query('/ip/dhcp-server/lease/print')
             self.acl = self.query('/ip/firewall/address-list/print')
-        except (AttributeError, ConnectionError, ConnectionRefusedError, FatalError):
+            self.error = False
+        except (AttributeError, ConnectionError,
+                ConnectionRefusedError, FatalError):
             self.arp, self.dhcp, self.acl = False, False, False
+            self.error = 'ROS_API Connection fail'
 
     def __repr__(self):
         return f'<AboutIP: {self.ip}>'
@@ -135,6 +138,9 @@ def run_action(**kwargs):
 def check(ip):
     about_ip = AboutIP(ip)
 
+    if about_ip.error:
+        return {'error': about_ip.error}
+
     if about_ip.arp:
         arp = about_ip.parse_arp()
     else:
@@ -168,9 +174,12 @@ def block_ip(ip, block=True):
     commands = [f'ip arp {action} [find where address={ip}]',
                 f'ip dhcp-server lease {action} [find where address={ip}]',
                 f'ip firewall address-list {action} [find where address={ip}]']
-    send_commands(commands)
-    sleep(1)
-    return check(ip)
+    if send_commands(commands):
+        sleep(1)
+        result = check(ip)
+    else:
+        result = {'error': "SSH connection fail"}
+    return result
 
 
 @unique_mac
@@ -189,10 +198,11 @@ def update_data(**kwargs):
                          f'ip arp set  [find where address={ip}] comment={comment}',
                          f'ip firewall address-list set  [find where address={ip}] comment={comment}'])
 
-    send_commands(commands)
-    result = {'message': ['Поменяно', commands]}
+    if send_commands(commands):
+        result = {'message': ['Поменяно', commands]}
+    else:
+        result = {'error': "SSH connection fail"}
     return result
-
 
 @unique_mac
 def add_ip(**kwargs):
@@ -205,8 +215,10 @@ def add_ip(**kwargs):
                     f'ip dhcp-server lease add address={ip} mac-address={mac} comment={comment}',
                     f'ip firewall address-list add address={ip} list=ACL-ACCESS-CLIENTS comment={comment}']
 
-        send_commands(commands)
-        result = {'message': [f'Добавлен IP: {ip}', commands]}
+        if send_commands(commands):
+            result = {'message': [f'Добавлен IP: {ip}', commands]}
+        else:
+            result = {'error': "SSH connection fail"}
     else:
         result = {'message': ['Cant find free IP', 'Sorry :E']}
     return result
@@ -216,6 +228,8 @@ def del_ip(ip):
     commands = [f'ip arp remove [find where address={ip}]',
                 f'ip dhcp-server lease remove [find where address={ip}]',
                 f'ip firewall address-list remove [find where address={ip}]']
-    send_commands(commands)
-    result = {'message': [f'Удалён IP: {ip}', commands]}
+    if send_commands(commands):
+        result = {'message': [f'Удалён IP: {ip}', commands]}
+    else:
+        result = {'error': "SSH connection fail"}
     return result

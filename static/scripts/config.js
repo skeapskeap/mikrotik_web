@@ -57,16 +57,22 @@ $(document).ready(function (){ //метод jQuery ready() начинает ра
 
     function displayResponse(response) {
         $("p[id*='error']").empty()   //clear all previous errors
-        if (response.error) {         // if there is validation error in form
+        if (response.form_error) {         // if there is validation error in form
             $('#result').empty()
             $('#message').empty()
-            $('#common_error').text(response.error["__all__"])
-            $('#mac_error').text(response.error["mac"])
-            $('#ip_error').text(response.error["ip"])
-            $('#url_error').text(response.error["url"])
+            $('#form_error').text(response.form_error["__all__"])
+            $('#mac_error').text(response.form_error["mac"])
+            $('#ip_error').text(response.form_error["ip"])
+            $('#url_error').text(response.form_error["url"])
         }
 
-        else {
+        else if (response.error) {                   // if there's some backend error
+        $('#form_error').empty()
+        $('#result').empty()
+        $('#message').text(response.error)
+        }
+
+        else {                                  // if everything's good
             var message = response.message
             $("#result").empty()                                  //очищает предыдущий вывод
             $(':input','#main_form').not('#id_action').val('')    //очищает все заполненные поля формы кроме action

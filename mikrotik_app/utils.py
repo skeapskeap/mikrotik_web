@@ -6,8 +6,10 @@ from logging import handlers
 from routeros import login
 from routeros.exc import ConnectionError, FatalError
 
-handler = handlers.RotatingFileHandler(filename='log', maxBytes=512_000, backupCount=5)
-formatter = logging.Formatter('%(asctime)s; %(levelname)s; %(name)s; %(message)s', '%c')
+handler = handlers.RotatingFileHandler(
+    filename='log', maxBytes=512_000, backupCount=5)
+formatter = logging.Formatter(
+    '%(asctime)s; %(levelname)s; %(name)s; %(message)s', '%c')
 handler.setFormatter(formatter)
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 logger = logging.getLogger()
@@ -39,8 +41,10 @@ def send_commands(commands: list):
             ssh.connect(**SSH_KWARGS)
             for command in commands:
                 ssh.exec_command(command)
+            return True
         except paramiko.ssh_exception.SSHException:
             logger.error("SSH connection fail")
+            return False
 
 
 def proper_mac(mac):
@@ -69,9 +73,11 @@ def find_free_ip() -> str:
         arp_records = mikrotik().query('/ip/arp/print').equal(
             interface='vlan_123',
             dynamic='false')
-    except ValueError:                                         # API микротика не переваривает reply, содержащий non-ascii символы =\
-        logger.info("Invalid ARP reply about")  # В некоторых хостах такие символы есть, например поле Comment
-        return None
+    # API микротика не переваривает reply, содержащий non-ascii символы =\
+    # В некоторых хостах такие символы есть, например поле Comment
+    except ValueError:
+        logger.info("Invalid ARP reply about")
+        return False
 
     used_ip = set()
     ip_pool = set()
@@ -94,11 +100,12 @@ def find_free_ip() -> str:
             acl_used = mikrotik().query('/ip/firewall/address-list/print').equal(address=free_ip, dynamic='false')
             if not (dhcp_used or acl_used):
                 return free_ip
-        except ValueError:                                                  # API микротика не переваривает reply, содержащий non-ascii символы =\
-            logger.error(f"Invalid reply about {free_ip}")    # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
+        # API микротика не переваривает reply, содержащий non-ascii символы =\
+        # В некоторых хостах такие символы есть, например поле Comment
+        except ValueError:
+            logger.error(f"Invalid reply about {free_ip}")
             continue
-
-    return None
+    return False
 
 
 if __name__ == '__main__':
