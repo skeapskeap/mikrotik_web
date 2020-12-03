@@ -1,7 +1,6 @@
 # https://pypi.org/project/routeros/#description
 from .decorators import unique_mac
-from .utils import find_free_ip, mikrotik, send_commands, time_now
-from routeros.exc import ConnectionError, FatalError
+from .utils import find_free_ip, ros_api, send_commands, time_now
 from time import sleep
 from transliterate import translit
 
@@ -11,12 +10,11 @@ class AboutIP:
     def __init__(self, ip):
         self.ip = ip
         try:
-            self.arp = self.query('/ip/arp/print')
-            self.dhcp = self.query('/ip/dhcp-server/lease/print')
-            self.acl = self.query('/ip/firewall/address-list/print')
+            self.arp = self.query('/ip/arp')
+            self.dhcp = self.query('/ip/dhcp-server/lease')
+            self.acl = self.query('/ip/firewall/address-list')
             self.error = False
-        except (AttributeError, ConnectionError,
-                ConnectionRefusedError, FatalError):
+        except (AttributeError, ConnectionRefusedError):
             self.arp, self.dhcp, self.acl = False, False, False
             self.error = 'ROS_API Connection fail'
 
@@ -24,13 +22,7 @@ class AboutIP:
         return f'<AboutIP: {self.ip}>'
 
     def query(self, query) -> tuple:
-        try:
-            reply = mikrotik().query(query).equal(address=self.ip, dynamic='false')
-        # API микротика не переваривает reply, содержащий non-ascii символы =\
-        # В некоторых хостах такие символы есть, например поле Active Hostname в dhcp-leases
-        # Или в поле Comment
-        except ValueError:
-            reply = ()
+        reply = ros_api().get_resource(query).get(address=self.ip)
         return reply
 
     def multiple_records(self) -> bool:

@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from .utils import mikrotik
+from .utils import ros_api
 
 
 def is_authenticated(view):
@@ -43,15 +43,15 @@ def allow_access(allowed_groups={}):
 
 def unique_mac(func):
     def wrapper(**kwargs):
-        arp_print = '/ip/arp/print'
-        dhcp_print = '/ip/dhcp-server/lease/print'
+        arp_print = '/ip/arp'
+        dhcp_print = '/ip/dhcp-server/lease'
         options = {'mac-address': kwargs.get('mac'), 'dynamic': 'false'}
 
-        if not mikrotik():
+        if not ros_api():
             return {'error': "ROS_API Connection fail"}
 
-        arp_overlap = mikrotik().query(arp_print).equal(**options)
-        dhcp_overlap = mikrotik().query(dhcp_print).equal(**options)
+        arp_overlap = ros_api().get_resource(arp_print).get(**options)
+        dhcp_overlap = ros_api().get_resource(dhcp_print).get(**options)
 
         if arp_overlap or dhcp_overlap:
             return {'message': ['Такой MAC уже существует', ['Увы :E']]}
